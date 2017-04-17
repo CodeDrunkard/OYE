@@ -1,0 +1,582 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		6418228E8F15715451329678 /* Pods_OYE.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 60F0BC755B42721E26B25DC6 /* Pods_OYE.framework */; };
+		6B3B518E1EA4C0F500931470 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B3B518D1EA4C0F500931470 /* AppDelegate.swift */; };
+		6B3B51901EA4C0F500931470 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B3B518F1EA4C0F500931470 /* ViewController.swift */; };
+		6B3B51931EA4C0F500931470 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 6B3B51911EA4C0F500931470 /* Main.storyboard */; };
+		6B3B51951EA4C0F500931470 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 6B3B51941EA4C0F500931470 /* Assets.xcassets */; };
+		6B3B51981EA4C0F500931470 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 6B3B51961EA4C0F500931470 /* LaunchScreen.storyboard */; };
+		6B3B51A31EA4C0F500931470 /* OYETests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B3B51A21EA4C0F500931470 /* OYETests.swift */; };
+		6B3B51AF1EA4C47300931470 /* VideoPreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B3B51AE1EA4C47300931470 /* VideoPreview.swift */; };
+		6B3B51B11EA4C7CD00931470 /* 14564977406580.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 6B3B51B01EA4C7CD00931470 /* 14564977406580.mp4 */; };
+		B42E8A880867F8EF41CB1714 /* Pods_OYE_OYETests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D4AC0584943B52C9CD60A44D /* Pods_OYE_OYETests.framework */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		6B3B519F1EA4C0F500931470 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 6B3B51821EA4C0F500931470 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 6B3B51891EA4C0F500931470;
+			remoteInfo = OYE;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		0BED2C54E7ABC46137B7ACD8 /* Pods-OYE-OYETests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-OYE-OYETests.release.xcconfig"; path = "Pods/Target Support Files/Pods-OYE-OYETests/Pods-OYE-OYETests.release.xcconfig"; sourceTree = "<group>"; };
+		60F0BC755B42721E26B25DC6 /* Pods_OYE.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_OYE.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		6B3B518A1EA4C0F500931470 /* OYE.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = OYE.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		6B3B518D1EA4C0F500931470 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		6B3B518F1EA4C0F500931470 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
+		6B3B51921EA4C0F500931470 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
+		6B3B51941EA4C0F500931470 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		6B3B51971EA4C0F500931470 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		6B3B51991EA4C0F500931470 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		6B3B519E1EA4C0F500931470 /* OYETests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = OYETests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		6B3B51A21EA4C0F500931470 /* OYETests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OYETests.swift; sourceTree = "<group>"; };
+		6B3B51A41EA4C0F500931470 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		6B3B51AE1EA4C47300931470 /* VideoPreview.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VideoPreview.swift; sourceTree = "<group>"; };
+		6B3B51B01EA4C7CD00931470 /* 14564977406580.mp4 */ = {isa = PBXFileReference; lastKnownFileType = file; path = 14564977406580.mp4; sourceTree = "<group>"; };
+		8A45222EFF358721ADCF77D1 /* Pods-OYE.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-OYE.release.xcconfig"; path = "Pods/Target Support Files/Pods-OYE/Pods-OYE.release.xcconfig"; sourceTree = "<group>"; };
+		8C92BB315E7A06A62B98FB11 /* Pods-OYE-OYETests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-OYE-OYETests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-OYE-OYETests/Pods-OYE-OYETests.debug.xcconfig"; sourceTree = "<group>"; };
+		D4AC0584943B52C9CD60A44D /* Pods_OYE_OYETests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_OYE_OYETests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		FD5A3509630C5FEF68356309 /* Pods-OYE.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-OYE.debug.xcconfig"; path = "Pods/Target Support Files/Pods-OYE/Pods-OYE.debug.xcconfig"; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		6B3B51871EA4C0F500931470 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				6418228E8F15715451329678 /* Pods_OYE.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		6B3B519B1EA4C0F500931470 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B42E8A880867F8EF41CB1714 /* Pods_OYE_OYETests.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		2C7AE32B5AAA65D5A4EC5F03 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				60F0BC755B42721E26B25DC6 /* Pods_OYE.framework */,
+				D4AC0584943B52C9CD60A44D /* Pods_OYE_OYETests.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		6B3B51811EA4C0F500931470 = {
+			isa = PBXGroup;
+			children = (
+				6B3B518C1EA4C0F500931470 /* OYE */,
+				6B3B51A11EA4C0F500931470 /* OYETests */,
+				6B3B518B1EA4C0F500931470 /* Products */,
+				8831E1C37E60F11499A2088A /* Pods */,
+				2C7AE32B5AAA65D5A4EC5F03 /* Frameworks */,
+			);
+			sourceTree = "<group>";
+		};
+		6B3B518B1EA4C0F500931470 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				6B3B518A1EA4C0F500931470 /* OYE.app */,
+				6B3B519E1EA4C0F500931470 /* OYETests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		6B3B518C1EA4C0F500931470 /* OYE */ = {
+			isa = PBXGroup;
+			children = (
+				6B3B518D1EA4C0F500931470 /* AppDelegate.swift */,
+				6B3B518F1EA4C0F500931470 /* ViewController.swift */,
+				6B3B51AD1EA4C45400931470 /* VideoSession */,
+				6B3B51911EA4C0F500931470 /* Main.storyboard */,
+				6B3B51941EA4C0F500931470 /* Assets.xcassets */,
+				6B3B51961EA4C0F500931470 /* LaunchScreen.storyboard */,
+				6B3B51991EA4C0F500931470 /* Info.plist */,
+				6B3B51B01EA4C7CD00931470 /* 14564977406580.mp4 */,
+			);
+			path = OYE;
+			sourceTree = "<group>";
+		};
+		6B3B51A11EA4C0F500931470 /* OYETests */ = {
+			isa = PBXGroup;
+			children = (
+				6B3B51A21EA4C0F500931470 /* OYETests.swift */,
+				6B3B51A41EA4C0F500931470 /* Info.plist */,
+			);
+			path = OYETests;
+			sourceTree = "<group>";
+		};
+		6B3B51AD1EA4C45400931470 /* VideoSession */ = {
+			isa = PBXGroup;
+			children = (
+				6B3B51AE1EA4C47300931470 /* VideoPreview.swift */,
+			);
+			path = VideoSession;
+			sourceTree = "<group>";
+		};
+		8831E1C37E60F11499A2088A /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				FD5A3509630C5FEF68356309 /* Pods-OYE.debug.xcconfig */,
+				8A45222EFF358721ADCF77D1 /* Pods-OYE.release.xcconfig */,
+				8C92BB315E7A06A62B98FB11 /* Pods-OYE-OYETests.debug.xcconfig */,
+				0BED2C54E7ABC46137B7ACD8 /* Pods-OYE-OYETests.release.xcconfig */,
+			);
+			name = Pods;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		6B3B51891EA4C0F500931470 /* OYE */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 6B3B51A71EA4C0F500931470 /* Build configuration list for PBXNativeTarget "OYE" */;
+			buildPhases = (
+				5E207A7CED5DFBBA79E03DA9 /* [CP] Check Pods Manifest.lock */,
+				6B3B51861EA4C0F500931470 /* Sources */,
+				6B3B51871EA4C0F500931470 /* Frameworks */,
+				6B3B51881EA4C0F500931470 /* Resources */,
+				2156C86B34F6D6531C641D02 /* [CP] Embed Pods Frameworks */,
+				9C683A40A270471E420D68D5 /* [CP] Copy Pods Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = OYE;
+			productName = OYE;
+			productReference = 6B3B518A1EA4C0F500931470 /* OYE.app */;
+			productType = "com.apple.product-type.application";
+		};
+		6B3B519D1EA4C0F500931470 /* OYETests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 6B3B51AA1EA4C0F500931470 /* Build configuration list for PBXNativeTarget "OYETests" */;
+			buildPhases = (
+				A04E80820CA2564813A0FBD9 /* [CP] Check Pods Manifest.lock */,
+				6B3B519A1EA4C0F500931470 /* Sources */,
+				6B3B519B1EA4C0F500931470 /* Frameworks */,
+				6B3B519C1EA4C0F500931470 /* Resources */,
+				1FF48B3A0A8E7927BB2D274F /* [CP] Embed Pods Frameworks */,
+				7E2F721512130BAAE34B1BB5 /* [CP] Copy Pods Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				6B3B51A01EA4C0F500931470 /* PBXTargetDependency */,
+			);
+			name = OYETests;
+			productName = OYETests;
+			productReference = 6B3B519E1EA4C0F500931470 /* OYETests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		6B3B51821EA4C0F500931470 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastSwiftUpdateCheck = 0830;
+				LastUpgradeCheck = 0830;
+				ORGANIZATIONNAME = "JT Ma";
+				TargetAttributes = {
+					6B3B51891EA4C0F500931470 = {
+						CreatedOnToolsVersion = 8.3;
+						DevelopmentTeam = C94329WK33;
+						ProvisioningStyle = Automatic;
+					};
+					6B3B519D1EA4C0F500931470 = {
+						CreatedOnToolsVersion = 8.3;
+						DevelopmentTeam = C94329WK33;
+						ProvisioningStyle = Automatic;
+						TestTargetID = 6B3B51891EA4C0F500931470;
+					};
+				};
+			};
+			buildConfigurationList = 6B3B51851EA4C0F500931470 /* Build configuration list for PBXProject "OYE" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 6B3B51811EA4C0F500931470;
+			productRefGroup = 6B3B518B1EA4C0F500931470 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				6B3B51891EA4C0F500931470 /* OYE */,
+				6B3B519D1EA4C0F500931470 /* OYETests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		6B3B51881EA4C0F500931470 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				6B3B51981EA4C0F500931470 /* LaunchScreen.storyboard in Resources */,
+				6B3B51951EA4C0F500931470 /* Assets.xcassets in Resources */,
+				6B3B51931EA4C0F500931470 /* Main.storyboard in Resources */,
+				6B3B51B11EA4C7CD00931470 /* 14564977406580.mp4 in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		6B3B519C1EA4C0F500931470 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		1FF48B3A0A8E7927BB2D274F /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-OYE-OYETests/Pods-OYE-OYETests-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		2156C86B34F6D6531C641D02 /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-OYE/Pods-OYE-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		5E207A7CED5DFBBA79E03DA9 /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_ROOT}/../Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n";
+			showEnvVarsInLog = 0;
+		};
+		7E2F721512130BAAE34B1BB5 /* [CP] Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "[CP] Copy Pods Resources";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-OYE-OYETests/Pods-OYE-OYETests-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		9C683A40A270471E420D68D5 /* [CP] Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "[CP] Copy Pods Resources";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-OYE/Pods-OYE-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		A04E80820CA2564813A0FBD9 /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_ROOT}/../Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		6B3B51861EA4C0F500931470 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				6B3B51901EA4C0F500931470 /* ViewController.swift in Sources */,
+				6B3B51AF1EA4C47300931470 /* VideoPreview.swift in Sources */,
+				6B3B518E1EA4C0F500931470 /* AppDelegate.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		6B3B519A1EA4C0F500931470 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				6B3B51A31EA4C0F500931470 /* OYETests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		6B3B51A01EA4C0F500931470 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 6B3B51891EA4C0F500931470 /* OYE */;
+			targetProxy = 6B3B519F1EA4C0F500931470 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin PBXVariantGroup section */
+		6B3B51911EA4C0F500931470 /* Main.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				6B3B51921EA4C0F500931470 /* Base */,
+			);
+			name = Main.storyboard;
+			sourceTree = "<group>";
+		};
+		6B3B51961EA4C0F500931470 /* LaunchScreen.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				6B3B51971EA4C0F500931470 /* Base */,
+			);
+			name = LaunchScreen.storyboard;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		6B3B51A51EA4C0F500931470 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
+				MTL_ENABLE_DEBUG_INFO = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		6B3B51A61EA4C0F500931470 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				SDKROOT = iphoneos;
+				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		6B3B51A81EA4C0F500931470 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = FD5A3509630C5FEF68356309 /* Pods-OYE.debug.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				DEVELOPMENT_TEAM = C94329WK33;
+				INFOPLIST_FILE = OYE/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = com.hiscene.OYE;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 3.0;
+			};
+			name = Debug;
+		};
+		6B3B51A91EA4C0F500931470 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 8A45222EFF358721ADCF77D1 /* Pods-OYE.release.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				DEVELOPMENT_TEAM = C94329WK33;
+				INFOPLIST_FILE = OYE/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = com.hiscene.OYE;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 3.0;
+			};
+			name = Release;
+		};
+		6B3B51AB1EA4C0F500931470 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 8C92BB315E7A06A62B98FB11 /* Pods-OYE-OYETests.debug.xcconfig */;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				DEVELOPMENT_TEAM = C94329WK33;
+				INFOPLIST_FILE = OYETests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = com.hiscene.OYETests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 3.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/OYE.app/OYE";
+			};
+			name = Debug;
+		};
+		6B3B51AC1EA4C0F500931470 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 0BED2C54E7ABC46137B7ACD8 /* Pods-OYE-OYETests.release.xcconfig */;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				DEVELOPMENT_TEAM = C94329WK33;
+				INFOPLIST_FILE = OYETests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = com.hiscene.OYETests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 3.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/OYE.app/OYE";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		6B3B51851EA4C0F500931470 /* Build configuration list for PBXProject "OYE" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				6B3B51A51EA4C0F500931470 /* Debug */,
+				6B3B51A61EA4C0F500931470 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		6B3B51A71EA4C0F500931470 /* Build configuration list for PBXNativeTarget "OYE" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				6B3B51A81EA4C0F500931470 /* Debug */,
+				6B3B51A91EA4C0F500931470 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		6B3B51AA1EA4C0F500931470 /* Build configuration list for PBXNativeTarget "OYETests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				6B3B51AB1EA4C0F500931470 /* Debug */,
+				6B3B51AC1EA4C0F500931470 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 6B3B51821EA4C0F500931470 /* Project object */;
+}
