@@ -11,16 +11,16 @@ import AVFoundation
 
 class ViewController: UIViewController {
 
-    @IBOutlet weak var videoPreview: VideoPreview!
+    @IBOutlet weak var player: Player!
+    @IBOutlet weak var videoAspect: NSLayoutConstraint!
     
     override func viewDidLoad() {
         super.viewDidLoad()
         let urlStr = Bundle.main.path(forResource: "14564977406580", ofType: "mp4")!
         let url = URL(fileURLWithPath: urlStr)
-        let player = AVPlayer(url: url)
-        player.play()
+        let item = AVPlayerItem(url: url)
         
-        videoPreview.player = player
+        self.player.playerItem = item
         
     }
 
