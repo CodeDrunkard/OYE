@@ -15,17 +15,6 @@ public class Player: UIView {
     public var player: AVPlayer? {
         didSet {
             preview.player = player
-//            if let duration = player?.currentItem?.duration.seconds {
-//                print(duration)
-////                let min = Int(duration / 60)
-////                let sec = Int(duration.truncatingRemainder(dividingBy: 60))
-////                uiTotalTimeLabel.text = String(format: "%02d:%02d", min, sec)
-//            }
-//            if let playerItem = player?.currentItem {
-//                let totalTime   = TimeInterval(playerItem.duration.value) / TimeInterval(playerItem.duration.timescale)
-//                print(totalTime)
-//                print(PlayerItemObserverKey.status.rawValue)
-//            }
         }
     }
     
@@ -35,7 +24,6 @@ public class Player: UIView {
             playerItem?.addObserver(self, forKeyPath: PlayerItemObserverKey.loadedTimeRanges.rawValue, options:NSKeyValueObservingOptions.new, context: nil)
             
             player = AVPlayer(playerItem: playerItem)
-            player?.play()
         }
     }
     
@@ -59,6 +47,17 @@ public class Player: UIView {
             uiDurationProgressView.setProgress(didLoadedDuration, animated: true)
         }
     }
+    
+    var currentDuration: (current: Float, total: Float)! {
+        didSet {
+            let min = Int(currentDuration.current / 60)
+            let sec = Int(currentDuration.current.truncatingRemainder(dividingBy: 60))
+            uiCurrentDurationLabel.text = String(format: "%02d:%02d", min, sec)
+            uiDurationSlider.value = currentDuration.current / currentDuration.total
+        }
+    }
+    
+    var timer: Timer?
     
     // MARK: LifeCycle
     
@@ -103,6 +102,7 @@ public class Player: UIView {
         uiDurationSlider.value = 0.0
         uiDurationSlider.setThumbImage(UIImage(named: "Player_slider_thumb"), for: .normal)
         uiDurationSlider.maximumTrackTintColor = UIColor.clear
+        uiDurationSlider.minimumTrackTintColor = UIColor.green
         
         uiDurationProgressView.tintColor      = UIColor ( red: 1.0, green: 1.0, blue: 1.0, alpha: 0.6 )
         uiDurationProgressView.trackTintColor = UIColor ( red: 1.0, green: 1.0, blue: 1.0, alpha: 0.3 )
@@ -172,6 +172,8 @@ public class Player: UIView {
     
     func play() {
         print("play")
+        addTimer()
+        player?.play()
     }
 }
 
@@ -202,6 +204,28 @@ extension Player {
             break
         default:
             break
+        }
+    }
+}
+
+extension Player {
+    func addTimer() {
+        timer?.invalidate()
+        timer = Timer.scheduledTimer(timeInterval: 1, target: self, selector: #selector(Player.timerInterval), userInfo: nil, repeats: true)
+        timer?.fireDate = Date()
+    }
+    
+    func removeTimer() {
+        
+    }
+    
+    func timerInterval() {
+        if let playerItem = playerItem {
+            if playerItem.duration.timescale != 0 {
+                let currentTime = CMTimeGetSeconds(self.player!.currentTime())
+                let totalTime = TimeInterval(playerItem.duration.value) / TimeInterval(playerItem.duration.timescale)
+                currentDuration = (Float(currentTime), Float(totalTime))
+            }
         }
     }
 }

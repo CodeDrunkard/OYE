@@ -21,7 +21,7 @@ class ViewController: UIViewController {
         let item = AVPlayerItem(url: url)
         
         self.player.playerItem = item
-        
+        self.player.play()
     }
 
     override func didReceiveMemoryWarning() {
