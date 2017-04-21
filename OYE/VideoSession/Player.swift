@@ -192,6 +192,13 @@ extension Player {
                 break
             }
         case PlayerItemObserverKey.loadedTimeRanges.rawValue:
+            if let loadedTimeRanges = player.currentItem?.loadedTimeRanges, let first = loadedTimeRanges.first {
+                let timeRange = first.timeRangeValue
+                let startSeconds = CMTimeGetSeconds(timeRange.start)
+                let durationSecound = CMTimeGetSeconds(timeRange.duration)
+                let result = startSeconds + durationSecound
+                didLoadedDuration = Float(result / item.duration.seconds)
+            }
             break
         default:
             break
