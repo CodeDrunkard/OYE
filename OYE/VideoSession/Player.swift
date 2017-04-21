@@ -15,11 +15,25 @@ public class Player: UIView {
     public var player: AVPlayer? {
         didSet {
             preview.player = player
+//            if let duration = player?.currentItem?.duration.seconds {
+//                print(duration)
+////                let min = Int(duration / 60)
+////                let sec = Int(duration.truncatingRemainder(dividingBy: 60))
+////                uiTotalTimeLabel.text = String(format: "%02d:%02d", min, sec)
+//            }
+//            if let playerItem = player?.currentItem {
+//                let totalTime   = TimeInterval(playerItem.duration.value) / TimeInterval(playerItem.duration.timescale)
+//                print(totalTime)
+//                print(PlayerItemObserverKey.status.rawValue)
+//            }
         }
     }
     
     public var playerItem: AVPlayerItem? {
         didSet {
+            playerItem?.addObserver(self, forKeyPath: PlayerItemObserverKey.status.rawValue, options:NSKeyValueObservingOptions.new, context: nil)
+            playerItem?.addObserver(self, forKeyPath: PlayerItemObserverKey.loadedTimeRanges.rawValue, options:NSKeyValueObservingOptions.new, context: nil)
+            
             player = AVPlayer(playerItem: playerItem)
             player?.play()
         }
@@ -158,5 +172,29 @@ public class Player: UIView {
     
     func play() {
         print("play")
+    }
+}
+
+extension Player {
+    public override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
+        guard let player = player, let item = object as? AVPlayerItem, let key = keyPath else {
+            return
+        }
+        switch key {
+        case PlayerItemObserverKey.status.rawValue:
+            switch player.status {
+            case .readyToPlay:
+                duration = item.duration.seconds
+                break
+            case .failed:
+                break
+            case .unknown:
+                break
+            }
+        case PlayerItemObserverKey.loadedTimeRanges.rawValue:
+            break
+        default:
+            break
+        }
     }
 }
