@@ -61,6 +61,7 @@ public class Player: UIView {
         super.init(frame: frame)
 
         setupUI()
+        addApplicationNotification()
     }
     
     public required init?(coder aDecoder: NSCoder) {
@@ -68,6 +69,11 @@ public class Player: UIView {
 
         setupUI()
         makeConstraints()
+        addApplicationNotification()
+    }
+    
+    deinit {
+        removeApplicationNotification()
     }
     
     // MARK: UI
@@ -87,11 +93,11 @@ public class Player: UIView {
         uiCurrentDurationLabel.text = "00:00"
         uiCurrentDurationLabel.textColor = .white
         uiCurrentDurationLabel.textAlignment = .center
-        uiCurrentDurationLabel.font = UIFont.systemFont(ofSize: 14)
+        uiCurrentDurationLabel.font = UIFont.systemFont(ofSize: 15)
         uiDurationLabel.text = "00:00"
         uiDurationLabel.textColor = .white
         uiDurationLabel.textAlignment = .center
-        uiDurationLabel.font = UIFont.systemFont(ofSize: 14)
+        uiDurationLabel.font = UIFont.systemFont(ofSize: 15)
 
         uiDurationSlider.maximumValue = 1.0
         uiDurationSlider.minimumValue = 0.0
@@ -99,16 +105,16 @@ public class Player: UIView {
         uiDurationSlider.setThumbImage(UIImage(named: "Player_slider_thumb"), for: .normal)
         uiDurationSlider.maximumTrackTintColor = UIColor.clear
         uiDurationSlider.minimumTrackTintColor = UIColor.green
-        uiDurationSlider.addTarget(self, action: #selector(Player.durationSliderBegan(_:)), for: .touchDown)
-        uiDurationSlider.addTarget(self, action: #selector(Player.durationSliderMove(_:)), for: .valueChanged)
-        uiDurationSlider.addTarget(self, action: #selector(Player.durationSliderEnd(_:)), for: [.touchUpInside, .touchUpOutside, .touchCancel])
+        uiDurationSlider.addTarget(self, action: #selector(self.durationSliderBegan(_:)), for: .touchDown)
+        uiDurationSlider.addTarget(self, action: #selector(self.durationSliderMove(_:)), for: .valueChanged)
+        uiDurationSlider.addTarget(self, action: #selector(self.durationSliderEnd(_:)), for: [.touchUpInside, .touchUpOutside, .touchCancel])
         
-        uiDurationProgressView.tintColor      = UIColor ( red: 1.0, green: 1.0, blue: 1.0, alpha: 0.6 )
-        uiDurationProgressView.trackTintColor = UIColor ( red: 1.0, green: 1.0, blue: 1.0, alpha: 0.3 )
+        uiDurationProgressView.tintColor      = UIColor (red: 1.0, green: 1.0, blue: 1.0, alpha: 0.6)
+        uiDurationProgressView.trackTintColor = UIColor (red: 1.0, green: 1.0, blue: 1.0, alpha: 0.3)
         
         uiPlayButton.setImage(UIImage(named: "Player_play"), for: .normal)
         uiPlayButton.setImage(UIImage(named: "Player_pause"), for: .selected)
-        uiPlayButton.addTarget(self, action: #selector(Player.play), for: .touchUpInside)
+        uiPlayButton.addTarget(self, action: #selector(self.play), for: .touchUpInside)
     }
     
     func makeConstraints() {
@@ -176,25 +182,34 @@ public class Player: UIView {
 //        uiView.fadeOut()
     }
     
-    func seek(to seconds: TimeInterval) {
+    func pause() {
+        timer?.invalidate()
+        player?.pause()
+    }
+    
+    func seek(to seconds: TimeInterval, completionHandler: ((Bool) -> Swift.Void)?) {
         let draggedTime = CMTimeMake(Int64(seconds), 1)
-        player?.seek(to: draggedTime, toleranceBefore: kCMTimeZero, toleranceAfter: kCMTimeZero, completionHandler: { (finished) in
-            self.setupTimer()
-            self.play()
-        })
+        player?.seek(to: draggedTime, toleranceBefore: kCMTimeZero, toleranceAfter: kCMTimeZero) { finished in
+            completionHandler?(finished)
+        }
     }
     
     func durationSliderBegan(_ sender: UISlider) {
-        
+        pause()
     }
     
     func durationSliderMove(_ sender: UISlider) {
         uiCurrentDurationLabel.text = convert(duration: sender.value * Float(duration))
-        seek(to: Double(sender.value) * duration)
+        seek(to: Double(sender.value) * duration, completionHandler: nil)
     }
     
     func durationSliderEnd(_ sender: UISlider) {
-        
+        seek(to: Double(sender.value) * duration) { finished in
+            if finished {
+                self.setupTimer()
+                self.play()
+            }
+        }
     }
 }
 
@@ -232,7 +247,7 @@ extension Player {
 extension Player {
     func setupTimer() {
         timer?.invalidate()
-        timer = Timer.scheduledTimer(timeInterval: 1, target: self, selector: #selector(Player.timerInterval), userInfo: nil, repeats: true)
+        timer = Timer.scheduledTimer(timeInterval: 1, target: self, selector: #selector(self.timerInterval), userInfo: nil, repeats: true)
         timer?.fireDate = Date()
     }
     
@@ -243,6 +258,36 @@ extension Player {
                 currentDuration = Float(currentTime)
             }
         }
+    }
+}
+
+extension Player {
+    func addApplicationNotification() {
+        NotificationCenter.default.addObserver(self,
+                                               selector: #selector(self.applicationWillResignActive),
+                                               name: Notification.Name.UIApplicationWillResignActive,
+                                               object: nil)
+        NotificationCenter.default.addObserver(self,
+                                               selector: #selector(self.applicationDidBecomeActive),
+                                               name: Notification.Name.UIApplicationDidBecomeActive,
+                                               object: nil)
+    }
+    
+    func removeApplicationNotification() {
+        NotificationCenter.default.removeObserver(self,
+                                                  name: Notification.Name.UIApplicationWillResignActive,
+                                                  object: nil)
+        NotificationCenter.default.removeObserver(self,
+                                                  name: Notification.Name.UIApplicationDidBecomeActive,
+                                                  object: nil)
+    }
+    
+    func applicationWillResignActive() {
+        pause()
+    }
+    
+    func applicationDidBecomeActive() {
+        play()
     }
 }
 
