@@ -88,7 +88,7 @@ public class Player: UIView {
     private let uiPlayButton = UIButton(type: UIButtonType.custom)
     
     func setupUI() {
-        uiView.backgroundColor = UIColor(red: 0.0, green: 0.0, blue: 0.0, alpha: 0.4)
+//        uiView.backgroundColor = UIColor(red: 0.0, green: 0.0, blue: 0.0, alpha: 0.4)
         
         uiCurrentDurationLabel.text = "00:00"
         uiCurrentDurationLabel.textColor = .white
@@ -112,9 +112,9 @@ public class Player: UIView {
         uiDurationProgressView.tintColor      = UIColor (red: 1.0, green: 1.0, blue: 1.0, alpha: 0.6)
         uiDurationProgressView.trackTintColor = UIColor (red: 1.0, green: 1.0, blue: 1.0, alpha: 0.3)
         
-        uiPlayButton.setImage(UIImage(named: "Player_play"), for: .normal)
-        uiPlayButton.setImage(UIImage(named: "Player_pause"), for: .selected)
-        uiPlayButton.addTarget(self, action: #selector(self.play), for: .touchUpInside)
+        uiPlayButton.setImage(UIImage(named: "Player_play"), for: .selected)
+        uiPlayButton.setImage(UIImage(named: "Player_pause"), for: .normal)
+        uiPlayButton.addTarget(self, action: #selector(self.playOrPause(_:)), for: .touchUpInside)
     }
     
     func makeConstraints() {
@@ -165,21 +165,29 @@ public class Player: UIView {
 //            $0.height.equalTo(50)
 //        }
         
-//        uiBottomMaskView.addSubview(uiPlayButton)
-//        uiPlayButton.snp.makeConstraints {
-//            $0.left.top.equalTo(uiBottomMaskView).offset(5)
-//            $0.bottom.equalTo(-5)
-//            $0.width.equalTo(40)
-//        }
+        uiView.addSubview(uiPlayButton)
+        uiPlayButton.snp.makeConstraints {
+            $0.center.equalTo(uiView)
+            $0.width.height.equalTo(80)
+        }
     }
     
     // MARK: Action
+    
+    func playOrPause(_ sender: UIButton) {
+        if !sender.isSelected {
+            pause()
+            sender.isSelected = true
+        } else {
+            play()
+            sender.isSelected = false
+        }
+    }
     
     func play() {
         print("play")
         setupTimer()
         player?.play()
-//        uiView.fadeOut()
     }
     
     func pause() {
