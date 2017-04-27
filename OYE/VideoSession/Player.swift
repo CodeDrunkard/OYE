@@ -14,7 +14,7 @@ public class Player: UIView {
     
     public var player: AVPlayer? {
         didSet {
-            preview.player = player
+//            preview.player = player
         }
     }
     
