@@ -20,12 +20,22 @@ public class Player: NSObject {
             if playerItem != player.currentItem {
                 player.replaceCurrentItem(with: playerItem)
             }
+            
+            if let timeObserver = timeObserver {
+                player.removeTimeObserver(timeObserver)
+            }
+            timeObserver = player.addPeriodicTimeObserver(forInterval: CMTimeMake(1, 1), queue: DispatchQueue.main) { (time) in
+                if let playerItem = self.playerItem, playerItem.duration.timescale != 0 {
+                    let current = CMTimeGetSeconds(time)
+                    let total = CMTimeGetSeconds(playerItem.duration)
+                    _ = current / total
+                    self.currentDuration = Float(current)
+                }
+            }
         }
     }
 
     public func play() {
-        print("play")
-        setupTimer()
         player.play()
     }
     
@@ -43,25 +53,26 @@ public class Player: NSObject {
     
     var delegate: PlayerDurationProtocol?
     
-    var duration: Float! {
+    private(set) var duration: Float! {
         didSet {
             delegate?.playerTotalDuration(duration: duration)
         }
     }
     
-    var didLoadedDuration: Float! {
+    private(set) var didLoadedDuration: Float! {
         didSet {
             delegate?.playerDidLoadedDuration(duration: didLoadedDuration)
         }
     }
     
-    var currentDuration: Float! {
+    private(set) var currentDuration: Float! {
         didSet {
             delegate?.playerCurrentDuration(duration: currentDuration)
         }
     }
     
     var timer: Timer?
+    var timeObserver: Any?
 
     enum PlayerItemObserverKey: String {
         case status
@@ -77,6 +88,11 @@ public class Player: NSObject {
     
     deinit {
         removeApplicationNotification()
+        playerItem?.removeObserver(self, forKeyPath: PlayerItemObserverKey.status.rawValue, context: nil)
+        playerItem?.removeObserver(self, forKeyPath: PlayerItemObserverKey.loadedTimeRanges.rawValue, context: nil)
+        if let timeObserver = timeObserver {
+            player.removeTimeObserver(timeObserver)
+        }
     }
 }
 
@@ -89,7 +105,6 @@ extension Player {
         case PlayerItemObserverKey.status.rawValue:
             switch player.status {
             case .readyToPlay:
-                setupTimer()
                 duration = Float(item.duration.seconds)
                 break
             case .failed:
@@ -110,23 +125,6 @@ extension Player {
             break
         default:
             break
-        }
-    }
-}
-
-extension Player {
-    func setupTimer() {
-        timer?.invalidate()
-        timer = Timer.scheduledTimer(timeInterval: 1, target: self, selector: #selector(self.timerInterval), userInfo: nil, repeats: true)
-        timer?.fireDate = Date()
-    }
-    
-    @objc func timerInterval() {
-        if let playerItem = playerItem {
-            if playerItem.duration.timescale != 0 {
-                let currentTime = CMTimeGetSeconds(playerItem.currentTime())
-                currentDuration = Float(currentTime)
-            }
         }
     }
 }

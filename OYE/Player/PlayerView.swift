@@ -56,7 +56,6 @@ class PlayerView: UIView {
     @objc func durationSliderEnd(_ sender: UISlider) {
         player.seek(to: Double(sender.value * totalDuration)) { finished in
             if finished {
-                self.player.setupTimer()
                 self.play()
             }
         }
