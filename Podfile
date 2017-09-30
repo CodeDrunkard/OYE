@@ -8,8 +8,4 @@ target 'OYE' do
     # Pods for OYE
     pod 'SnapKit'
     
-    target 'OYETests' do
-        # Pods for testing
-    end
-    
 end

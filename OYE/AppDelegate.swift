@@ -2,8 +2,8 @@
 //  AppDelegate.swift
 //  OYE
 //
-//  Created by JT Ma on 17/04/2017.
-//  Copyright © 2017 JT Ma. All rights reserved.
+//  Created by JT Ma on 30/09/2017.
+//  Copyright © 2017 JiangtaoMa<majt@hiscene.com>. All rights reserved.
 //
 
 import UIKit
