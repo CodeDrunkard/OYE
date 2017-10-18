@@ -7,28 +7,36 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "PlayerData.h"
 
 @class PlayerDataRequest;
 
 @protocol PlayerDataRequestDelegate <NSObject>
 
-- (void)playerDataRequest:(PlayerDataRequest *)dataRequest didReceiveData:(NSData *)data;
-- (void)playerDataRequest:(PlayerDataRequest *)dataRequest didCompleteWithError:(nullable NSError *)error;
+- (void)playerDataRequest:(PlayerDataRequest *_Nonnull)dataRequest playerData:(PlayerData *_Nullable)model didReceiveData:(NSData *_Nullable)data;
+- (void)playerDataRequest:(PlayerDataRequest *_Nonnull)dataRequest playerData:(PlayerData *_Nullable)data didCompleteWithError:(nullable NSError *)error;
 
 @end
 
 @interface PlayerDataRequest : NSObject
 
-@property (nonatomic, strong) NSString* destinationDirectory;
+@property (nonatomic, readonly) NSInteger startOffset;
+@property (nonatomic, readonly) NSInteger downloadedLength;
+@property (nonatomic, readonly) NSInteger contentLength;
+@property (nonatomic, readonly) NSString * _Nullable contentType;
 
-@property (nonatomic, assign) NSInteger startOffset;
-@property (nonatomic, assign) NSInteger downloadedLength;
-@property (nonatomic, assign) NSInteger contentLength;
-@property (nonatomic, strong) NSString* contentType;
+@property (nonatomic, strong) NSString * _Nullable cacheDirectory;
 
-@property (nonatomic, weak) id<PlayerDataRequestDelegate> delegate;
+@property (nonatomic, weak) id<PlayerDataRequestDelegate> _Nullable delegate;
 
-- (void)resume:(NSString *)urlString withOffset:(NSInteger)offset;
-- (void)cancel:(NSString *)urlString;
+- (void)resume:(NSString *_Nullable)urlString withOffset:(NSInteger)offset;
+- (void)cancel:(NSString *_Nonnull)urlString;
+
+@end
+
+@interface PlayerDataRequest (FileManager)
+
+- (void)createDirectoryAtPath:(NSString *_Nullable)path;
+- (BOOL)deleteFileAtPath:(NSString *_Nullable)path;
 
 @end

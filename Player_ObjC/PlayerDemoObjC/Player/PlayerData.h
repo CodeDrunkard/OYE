@@ -10,9 +10,9 @@
 
 @interface PlayerData : NSObject
 
-@property (nonatomic, strong) NSString* url;
-@property (nonatomic, strong) NSURLSessionDataTask* task;
-@property (nonatomic, strong) NSString* localPath;
+@property (nonatomic, strong) NSString *url;
+@property (nonatomic, strong) NSURLSessionDataTask *task;
+@property (nonatomic, strong) NSString *cachePath;
 @property (nonatomic, assign) BOOL isDownloading;
 
 @property (nonatomic, assign) NSUInteger downloadedSize;

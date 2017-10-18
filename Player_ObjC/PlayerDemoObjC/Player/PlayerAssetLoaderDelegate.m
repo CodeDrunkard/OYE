@@ -13,25 +13,29 @@
 
 @interface PlayerAssetLoaderDelegate () <PlayerDataRequestDelegate>
 
+@property (nonatomic, strong) NSString *destDirectory;
+@property (nonatomic, strong) NSString *cacheDirectory;
+
 @property (nonatomic, strong) PlayerDataRequest *dataRequest;
 @property (nonatomic, strong) NSMutableArray *pendingRequests;
-@property (nonatomic, strong) NSString *videoPath;
 
 @end
 
 @implementation PlayerAssetLoaderDelegate
 
 - (instancetype)init {
+    NSString *document = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES).lastObject;
+    return [self initWithCacheDirectory:document destDirectory:document];
+}
+
+- (instancetype)initWithCacheDirectory:(NSString *)cacheDirectory destDirectory:(NSString *)destDirectory {
     self = [super init];
     if (self) {
         self.pendingRequests = [NSMutableArray array];
         self.dataRequest = [[PlayerDataRequest alloc] init];
         self.dataRequest.delegate = self;
-        
-        NSString *document = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES).lastObject;
-        self.dataRequest.destinationDirectory = document;
-        
-        self.videoPath = [document stringByAppendingPathComponent:@"temp.mp4"];
+        self.cacheDirectory = cacheDirectory;
+        self.destDirectory = destDirectory;
     }
     return self;
 }
@@ -40,37 +44,42 @@
 
 - (BOOL)resourceLoader:(AVAssetResourceLoader *)resourceLoader
 shouldWaitForLoadingOfRequestedResource:(AVAssetResourceLoadingRequest *)loadingRequest {
+    NSLog(@"state: Loading");
     [self.pendingRequests addObject:loadingRequest];
     [self loadingRequest:loadingRequest];
-    NSLog(@"state: PlayerAssetLoaderStateLoading");
     return YES;
 }
 
 - (void)resourceLoader:(AVAssetResourceLoader *)resourceLoader
 didCancelLoadingRequest:(AVAssetResourceLoadingRequest *)loadingRequest {
+    NSLog(@"state: Cancel");
     [self.pendingRequests removeObject:loadingRequest];
 }
 
 #pragma mark - PlayerDataRequestDelegate
 
 - (void)playerDataRequest:(PlayerDataRequest *)dataRequest
+               playerData:(PlayerData *)model
            didReceiveData:(NSData *)data {
-    [self internalPendingRequests];
+    [self internalPendingRequestsWithCachePath:model.cachePath];
 }
 
 - (void)playerDataRequest:(PlayerDataRequest *)dataRequest
+               playerData:(PlayerData *)data
      didCompleteWithError:(NSError *)error {
     if (error) {
         NSLog(@"didCompleteWithError: %@", error.description);
     } else {
         NSLog(@"didComplete");
-        NSString *document = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES).lastObject;
-        NSString *movePath =  [document stringByAppendingPathComponent:@"保存数据.mp4"];
-        BOOL isSuccess = [[NSFileManager defaultManager] copyItemAtPath:self.videoPath toPath:movePath error:nil];
-        if (isSuccess) {
-            NSLog(@"rename success");
-        } else {
-            NSLog(@"rename fail");
+        if (! [self.cacheDirectory isEqualToString:self.destDirectory]) {
+            NSString *cachePath = [self.cacheDirectory stringByAppendingPathComponent:data.url.lastPathComponent];
+            NSString *destPath = [self.destDirectory stringByAppendingPathComponent:data.url.lastPathComponent];
+            BOOL isSuccess = [[NSFileManager defaultManager] copyItemAtPath:cachePath toPath:destPath error:nil];
+            if (isSuccess) {
+                NSLog(@"rename success");
+            } else {
+                NSLog(@"rename fail");
+            }
         }
     }
 }
@@ -85,19 +94,26 @@ didCancelLoadingRequest:(AVAssetResourceLoadingRequest *)loadingRequest {
     }
     startOffset = MAX(0, startOffset);
     
-    NSURLComponents* actualURLComponents = [[NSURLComponents alloc] initWithURL:loadingRequest.request.URL resolvingAgainstBaseURL:NO];
+    NSURLComponents *actualURLComponents = [[NSURLComponents alloc] initWithURL:loadingRequest.request.URL resolvingAgainstBaseURL:NO];
     actualURLComponents.scheme = @"http";
-    NSURL* url = actualURLComponents.URL;
+    NSURL *url = actualURLComponents.URL;
     [self.dataRequest resume:url.absoluteString withOffset:0];
 }
 
-- (void)internalPendingRequests{
+- (void)cancelRequest:(AVAssetResourceLoadingRequest *)loadingRequest {
+    NSURLComponents *actualURLComponents = [[NSURLComponents alloc] initWithURL:loadingRequest.request.URL resolvingAgainstBaseURL:NO];
+    actualURLComponents.scheme = @"http";
+    NSURL *url = actualURLComponents.URL;
+    [self.dataRequest cancel:url.absoluteString];
+}
+
+- (void)internalPendingRequestsWithCachePath:(NSString *)cachePath {
     NSMutableArray *requestsCompleted = [NSMutableArray array];
     for (AVAssetResourceLoadingRequest *loadingRequest in self.pendingRequests) {
         @autoreleasepool {
             if (! loadingRequest.isFinished) {
                 [self fillInContentInformation:loadingRequest.contentInformationRequest];
-                BOOL didRespondFinished = [self respondWithDataForRequest:loadingRequest];
+                BOOL didRespondFinished = [self respondWithDataForRequest:loadingRequest cachePath:cachePath];
                 if (didRespondFinished) {
                     [requestsCompleted addObject:loadingRequest];
                 }
@@ -105,6 +121,8 @@ didCancelLoadingRequest:(AVAssetResourceLoadingRequest *)loadingRequest {
         }
     }
     if (requestsCompleted.count > 0) {
+        NSLog(@"state: Finished");
+        
         [self.pendingRequests removeObjectsInArray:[requestsCompleted copy]];
     }
 }
@@ -117,7 +135,7 @@ didCancelLoadingRequest:(AVAssetResourceLoadingRequest *)loadingRequest {
     contentInformationRequest.contentLength = self.dataRequest.contentLength;
 }
 
-- (BOOL)respondWithDataForRequest:(AVAssetResourceLoadingRequest *)loadingRequest {
+- (BOOL)respondWithDataForRequest:(AVAssetResourceLoadingRequest *)loadingRequest cachePath:(NSString *)cachePath {
     NSUInteger cacheLength = self.dataRequest.downloadedLength;
     NSUInteger requestedOffset = loadingRequest.dataRequest.requestedOffset;
     if (loadingRequest.dataRequest.currentOffset != 0) {
@@ -126,9 +144,9 @@ didCancelLoadingRequest:(AVAssetResourceLoadingRequest *)loadingRequest {
     NSUInteger canReadLength = cacheLength - (requestedOffset - 0);
     NSUInteger respondLength = MIN(canReadLength, loadingRequest.dataRequest.requestedLength);
     
-    NSFileHandle * handle = [NSFileHandle fileHandleForReadingAtPath:self.videoPath];
+    NSFileHandle  *handle = [NSFileHandle fileHandleForReadingAtPath:cachePath];
     [handle seekToFileOffset:requestedOffset];
-    NSData* tempVideoData = [handle readDataOfLength:respondLength];
+    NSData *tempVideoData = [handle readDataOfLength:respondLength];
     [loadingRequest.dataRequest respondWithData:tempVideoData];
     
     NSUInteger nowendOffset = requestedOffset + canReadLength;
@@ -142,4 +160,5 @@ didCancelLoadingRequest:(AVAssetResourceLoadingRequest *)loadingRequest {
 }
 
 @end
+
 

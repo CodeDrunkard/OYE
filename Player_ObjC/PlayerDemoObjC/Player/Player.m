@@ -28,9 +28,9 @@ static void *kPlayerCurrentItemObservationContext = &kPlayerCurrentItemObservati
     PlayerAssetLoaderDelegate *assetLoaderDelegate;
 }
 
-@property (nonatomic, strong) AVPlayer* player;
-@property (nonatomic, strong) AVPlayerItem* item;
-@property (nonatomic, strong) AVPlayerItemVideoOutput* itemOutput;
+@property (nonatomic, strong) AVPlayer *player;
+@property (nonatomic, strong) AVPlayerItem *item;
+@property (nonatomic, strong) AVPlayerItemVideoOutput *itemOutput;
 @property (nonatomic, assign) id itemObserver;
 
 @end
@@ -68,7 +68,7 @@ static void *kPlayerCurrentItemObservationContext = &kPlayerCurrentItemObservati
         AVURLAsset *asset;
         
         NSString *document = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES).lastObject;
-        NSString* videoPath = [document stringByAppendingPathComponent:@"保存数据.mp4"];
+        NSString *videoPath = [document stringByAppendingPathComponent:url.lastPathComponent];
         BOOL isExist = [[NSFileManager defaultManager] fileExistsAtPath:videoPath];
         if (isExist) {
 //            asset = [AVURLAsset URLAssetWithURL:url options:nil];
@@ -77,7 +77,7 @@ static void *kPlayerCurrentItemObservationContext = &kPlayerCurrentItemObservati
         }
         url = [self getSchemeVideoURL:url];
         asset = [AVURLAsset URLAssetWithURL:url options:nil];
-        [self configDelegates:asset];
+        [self configDelegates:asset cacheDirectory:document destDirectory:document];
         
         /*
          Create an asset for inspection of a resource referenced by a given URL.
@@ -113,7 +113,7 @@ static void *kPlayerCurrentItemObservationContext = &kPlayerCurrentItemObservati
     self.player.volume = volume;
 }
 
-- (void)configDelegates:(AVURLAsset *)asset {
+- (void)configDelegates:(AVURLAsset *)asset cacheDirectory:(NSString *)cacheDirectory destDirectory:(NSString *)destDirectory {
     self->assetLoaderDelegate = [[PlayerAssetLoaderDelegate alloc] init];
     AVAssetResourceLoader *loader = asset.resourceLoader;
     [loader setDelegate:assetLoaderDelegate queue:dispatch_queue_create("com.hiscene.jt.playerAssetLoader", nil)];
@@ -266,7 +266,6 @@ static void *kPlayerCurrentItemObservationContext = &kPlayerCurrentItemObservati
 @implementation Player (FrameOutput)
 
 - (void)frame {
-    NSLog(@"Player frame");
     const CMTime currentTime = self.item.currentTime;
     if ([self.itemOutput hasNewPixelBufferForItemTime:currentTime]) {
         const CVPixelBufferRef pixelBuffer = [self.itemOutput copyPixelBufferForItemTime:currentTime itemTimeForDisplay:nil];

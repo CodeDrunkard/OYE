@@ -7,15 +7,18 @@
 //
 
 #import "PlayerDataRequest.h"
-#import "PlayerData.h"
 
 @interface PlayerDataRequest () <NSURLSessionDelegate, NSURLSessionDataDelegate>
 
-@property (nonatomic, strong) NSURLSession* session;
-@property (nonatomic, strong) NSMutableDictionary<NSString*, PlayerData*>* activeDownloads;
+@property (nonatomic, strong) NSURLSession *session;
+@property (nonatomic, strong) NSMutableDictionary<NSString *, PlayerData *> *activeDownloads;
 
-@property (nonatomic, strong) NSFileHandle* fileHandle;
-@property (nonatomic, strong) NSString* videoTempPath;
+@property (nonatomic, assign) NSInteger startOffset;
+@property (nonatomic, assign) NSInteger downloadedLength;
+@property (nonatomic, assign) NSInteger contentLength;
+@property (nonatomic, strong) NSString *contentType;
+
+@property (nonatomic, strong) NSFileHandle *fileHandle;
 
 @end
 
@@ -24,41 +27,35 @@
 - (instancetype)init {
     self = [super init];
     if (self) {
-        NSURLSessionConfiguration* configuration = [NSURLSessionConfiguration defaultSessionConfiguration];
+        NSURLSessionConfiguration *configuration = [NSURLSessionConfiguration defaultSessionConfiguration];
         self.session = [NSURLSession sessionWithConfiguration:configuration delegate:self delegateQueue:[NSOperationQueue mainQueue]];
         self.activeDownloads = [NSMutableDictionary dictionary];
-        
-        NSString *document = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES).lastObject;
-        self.videoTempPath = [document stringByAppendingPathComponent:@"temp.mp4"];
-        BOOL isExist = [NSFileManager.defaultManager fileExistsAtPath:self.videoTempPath];
-        if (isExist) {
-            [NSFileManager.defaultManager removeItemAtPath:self.videoTempPath error:nil];
-        }
-        [NSFileManager.defaultManager createFileAtPath:self.videoTempPath contents:nil attributes:nil];
-        self.fileHandle = [NSFileHandle fileHandleForWritingAtPath:self.videoTempPath];
+        NSString* cachesDirectory = [NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES) firstObject];
+        self.cacheDirectory = [cachesDirectory stringByAppendingPathComponent:@"videoTemp"];
+        [self createDirectoryAtPath:self.cacheDirectory];
     }
     return self;
 }
 
 - (void)dealloc {
     [self.session invalidateAndCancel];
+    [self deleteFileAtPath:self.cacheDirectory];
 }
 
 - (void)resume:(NSString *)urlString withOffset:(NSInteger)offset {
     self.startOffset = offset;
     
-    NSURL* url = [NSURL URLWithString:urlString];
+    NSURL *url = [NSURL URLWithString:urlString];
     if (!url) return;
     
-    PlayerData* data = self.activeDownloads[urlString];
+    PlayerData *data = self.activeDownloads[urlString];
     if (! data) {
         data = [[PlayerData alloc] initWithURL:urlString];
         self.activeDownloads[urlString] = data;
     }
 
-    NSMutableURLRequest* request = [NSMutableURLRequest requestWithURL:url];
+    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
     
-    NSLog(@"---data.isDownloading: %d", (int)data.isDownloading);
     if (data.isDownloading) return;
     
     if (offset >= 0) {
@@ -70,11 +67,20 @@
     
     [data.task resume];
     data.isDownloading = YES;
+    
+    data.cachePath = [self.cacheDirectory stringByAppendingPathComponent:url.lastPathComponent];
+    BOOL isExist = [NSFileManager.defaultManager fileExistsAtPath:data.cachePath];
+    if (isExist) {
+        [NSFileManager.defaultManager removeItemAtPath:data.cachePath error:nil];
+    }
+    [NSFileManager.defaultManager createFileAtPath:data.cachePath contents:nil attributes:nil];
+    self.fileHandle = [NSFileHandle fileHandleForWritingAtPath:data.cachePath];
 }
 
 - (void)cancel:(NSString *)urlString {
-    PlayerData* data = self.activeDownloads[urlString];
-    if (data) {
+    PlayerData *data = self.activeDownloads[urlString];
+    if (data && data.isDownloading) {
+        data.isDownloading = NO;
         [data.task cancel];
         self.activeDownloads[urlString] = nil;
     }
@@ -89,12 +95,10 @@ didReceiveResponse:(NSURLResponse *)response
     NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse*)response;
     NSDictionary *allHeaderFields = (NSDictionary *)[httpResponse allHeaderFields];
     NSInteger length = [[allHeaderFields valueForKey:@"Content-Length"] integerValue];
-    NSString* type = [allHeaderFields valueForKey:@"Content-Type"];
+    NSString *type = [allHeaderFields valueForKey:@"Content-Type"];
     
     self.contentLength = MAX(length, (NSInteger)httpResponse.expectedContentLength);
-    self.contentType = type ? type : @"";
-    
-    NSLog(@"didReceiveResponse: -length = %ld, -type = %@", (long)self.contentLength, self.contentType);
+    self.contentType = type ? type : @"video/mp4";
     
     /*
      NSURLSessionResponseCancel         = 0, 取消 默认
@@ -108,13 +112,16 @@ didReceiveResponse:(NSURLResponse *)response
 - (void)URLSession:(NSURLSession *)session
           dataTask:(NSURLSessionDataTask *)dataTask
     didReceiveData:(NSData *)data {
+    NSString* urlString = dataTask.originalRequest.URL.absoluteString;
+    PlayerData *model = self.activeDownloads[urlString];
+    
+    self.downloadedLength += data.length;
     [self.fileHandle seekToEndOfFile];
     [self.fileHandle writeData:data];
-    self.downloadedLength += data.length;
     
     dispatch_async(dispatch_get_main_queue(), ^{
-        if (self.delegate && [self.delegate respondsToSelector:@selector(playerDataRequest:didReceiveData:)]) {
-            [self.delegate playerDataRequest:self didReceiveData:data];
+        if (self.delegate && [self.delegate respondsToSelector:@selector(playerDataRequest:playerData:didReceiveData:)]) {
+            [self.delegate playerDataRequest:self playerData:model didReceiveData:data];
         }
     });
 }
@@ -122,8 +129,10 @@ didReceiveResponse:(NSURLResponse *)response
 - (void)URLSession:(NSURLSession *)session
               task:(NSURLSessionTask *)task
 didCompleteWithError:(nullable NSError *)error {
-    if (self.delegate && [self.delegate respondsToSelector:@selector(playerDataRequest:didCompleteWithError:)]) {
-        [self.delegate playerDataRequest:self didCompleteWithError:error];
+    NSString* urlString = task.originalRequest.URL.absoluteString;
+    PlayerData *data = self.activeDownloads[urlString];
+    if (self.delegate && [self.delegate respondsToSelector:@selector(playerDataRequest:playerData:didCompleteWithError:)]) {
+        [self.delegate playerDataRequest:self playerData:data didCompleteWithError:error];
     }
 }
 
@@ -137,7 +146,34 @@ didCompleteWithError:(nullable NSError *)error {
  */
 - (void)URLSession:(NSURLSession *)session
 didBecomeInvalidWithError:(NSError *)error {
-    NSLog(@"didBecomeInvalidWithError: %@", error.description);
+    NSLog(@"PlayerDataRequest is invalid with error: %@", error.description);
+}
+
+@end
+
+@implementation PlayerDataRequest (FileManager)
+
+- (void)createDirectoryAtPath:(NSString *)path {
+    BOOL isDirectory, isExist;
+    isExist = [NSFileManager.defaultManager fileExistsAtPath:path isDirectory:&isDirectory];
+    if (!isExist || !isDirectory) {
+        [NSFileManager.defaultManager createDirectoryAtPath:path withIntermediateDirectories:YES attributes:nil error:nil];
+    }
+}
+
+- (BOOL)deleteFileAtPath:(NSString *)path {
+    NSError* error;
+    BOOL isDirectory, isExist;
+    isExist = [NSFileManager.defaultManager fileExistsAtPath:path isDirectory:&isDirectory];
+    if (isExist) {
+        BOOL success = [NSFileManager.defaultManager removeItemAtPath:path error:&error];
+        if (success) {
+            return YES;
+        } else {
+            NSLog(@"delete directory failure: %@", error.description);
+        }
+    }
+    return NO;
 }
 
 @end
