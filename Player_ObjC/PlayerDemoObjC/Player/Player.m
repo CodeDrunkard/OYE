@@ -28,10 +28,13 @@ static void *kPlayerCurrentItemObservationContext = &kPlayerCurrentItemObservati
     PlayerAssetLoaderDelegate *assetLoaderDelegate;
 }
 
-@property (nonatomic, strong) AVPlayer *player;
-@property (nonatomic, strong) AVPlayerItem *item;
-@property (nonatomic, strong) AVPlayerItemVideoOutput *itemOutput;
+@property (nonatomic, strong) AVPlayer* player;
+@property (nonatomic, strong) AVPlayerItem* item;
+@property (nonatomic, strong) AVPlayerItemVideoOutput* itemOutput;
 @property (nonatomic, assign) id itemObserver;
+
+@property (nonatomic, strong) NSString *destDirectory;
+@property (nonatomic, strong) NSString *cacheDirectory;
 
 @end
 
@@ -47,6 +50,10 @@ static void *kPlayerCurrentItemObservationContext = &kPlayerCurrentItemObservati
 
 - (void)initialize {
     self.player = [[AVPlayer alloc] init];
+
+    NSString* cachesDirectory = [NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES) firstObject];
+    self.destDirectory = [cachesDirectory stringByAppendingPathComponent:@"videos"];
+    self.cacheDirectory = [cachesDirectory stringByAppendingPathComponent:@"videoTemp"];
 }
 
 - (void)dealloc {
@@ -67,17 +74,17 @@ static void *kPlayerCurrentItemObservationContext = &kPlayerCurrentItemObservati
     if (url) {
         AVURLAsset *asset;
         
-        NSString *document = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES).lastObject;
-        NSString *videoPath = [document stringByAppendingPathComponent:url.lastPathComponent];
-        BOOL isExist = [[NSFileManager defaultManager] fileExistsAtPath:videoPath];
-        if (isExist) {
-//            asset = [AVURLAsset URLAssetWithURL:url options:nil];
-            [NSFileManager.defaultManager removeItemAtPath:videoPath error:nil];
+        NSString* videoPath = [self.destDirectory stringByAppendingPathComponent:url.lastPathComponent];
+        BOOL isDirectory;
+        BOOL isExist = [[NSFileManager defaultManager] fileExistsAtPath:videoPath isDirectory:&isDirectory];
+        if (isExist && !isDirectory) {
+            url = [NSURL fileURLWithPath:videoPath isDirectory:NO];
+            asset = [AVURLAsset URLAssetWithURL:url options:nil];
         } else {
+            url = [self getSchemeVideoURL:url];
+            asset = [AVURLAsset URLAssetWithURL:url options:nil];
+            [self configDelegates:asset];
         }
-        url = [self getSchemeVideoURL:url];
-        asset = [AVURLAsset URLAssetWithURL:url options:nil];
-        [self configDelegates:asset cacheDirectory:document destDirectory:document];
         
         /*
          Create an asset for inspection of a resource referenced by a given URL.
@@ -113,8 +120,8 @@ static void *kPlayerCurrentItemObservationContext = &kPlayerCurrentItemObservati
     self.player.volume = volume;
 }
 
-- (void)configDelegates:(AVURLAsset *)asset cacheDirectory:(NSString *)cacheDirectory destDirectory:(NSString *)destDirectory {
-    self->assetLoaderDelegate = [[PlayerAssetLoaderDelegate alloc] init];
+- (void)configDelegates:(AVURLAsset *)asset {
+    self->assetLoaderDelegate = [[PlayerAssetLoaderDelegate alloc] initWithCacheDirectory:self.cacheDirectory destDirectory:self.destDirectory];
     AVAssetResourceLoader *loader = asset.resourceLoader;
     [loader setDelegate:assetLoaderDelegate queue:dispatch_queue_create("com.hiscene.jt.playerAssetLoader", nil)];
 }
@@ -266,6 +273,7 @@ static void *kPlayerCurrentItemObservationContext = &kPlayerCurrentItemObservati
 @implementation Player (FrameOutput)
 
 - (void)frame {
+    NSLog(@"Player frame");
     const CMTime currentTime = self.item.currentTime;
     if ([self.itemOutput hasNewPixelBufferForItemTime:currentTime]) {
         const CVPixelBufferRef pixelBuffer = [self.itemOutput copyPixelBufferForItemTime:currentTime itemTimeForDisplay:nil];

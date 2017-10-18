@@ -32,7 +32,7 @@
     self = [super init];
     if (self) {
         self.pendingRequests = [NSMutableArray array];
-        self.dataRequest = [[PlayerDataRequest alloc] init];
+        self.dataRequest = [[PlayerDataRequest alloc] initWithCacheDirectory:cacheDirectory];
         self.dataRequest.delegate = self;
         self.cacheDirectory = cacheDirectory;
         self.destDirectory = destDirectory;
@@ -74,11 +74,15 @@ didCancelLoadingRequest:(AVAssetResourceLoadingRequest *)loadingRequest {
         if (! [self.cacheDirectory isEqualToString:self.destDirectory]) {
             NSString *cachePath = [self.cacheDirectory stringByAppendingPathComponent:data.url.lastPathComponent];
             NSString *destPath = [self.destDirectory stringByAppendingPathComponent:data.url.lastPathComponent];
-            BOOL isSuccess = [[NSFileManager defaultManager] copyItemAtPath:cachePath toPath:destPath error:nil];
+            BOOL isExist = [NSFileManager.defaultManager fileExistsAtPath:destPath];
+            if (isExist) {
+                return;
+            }
+            BOOL isSuccess = [NSFileManager.defaultManager copyItemAtPath:cachePath toPath:destPath error:nil];
             if (isSuccess) {
-                NSLog(@"rename success");
+                NSLog(@"copy success");
             } else {
-                NSLog(@"rename fail");
+                NSLog(@"copy fail");
             }
         }
     }

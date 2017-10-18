@@ -19,19 +19,19 @@
 @property (nonatomic, strong) NSString *contentType;
 
 @property (nonatomic, strong) NSFileHandle *fileHandle;
+@property (nonatomic, strong) NSString *cacheDirectory;
 
 @end
 
 @implementation PlayerDataRequest
 
-- (instancetype)init {
+- (instancetype)initWithCacheDirectory:(NSString *)cacheDirectory {
     self = [super init];
     if (self) {
         NSURLSessionConfiguration *configuration = [NSURLSessionConfiguration defaultSessionConfiguration];
         self.session = [NSURLSession sessionWithConfiguration:configuration delegate:self delegateQueue:[NSOperationQueue mainQueue]];
         self.activeDownloads = [NSMutableDictionary dictionary];
-        NSString* cachesDirectory = [NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES) firstObject];
-        self.cacheDirectory = [cachesDirectory stringByAppendingPathComponent:@"videoTemp"];
+        self.cacheDirectory = cacheDirectory;
         [self createDirectoryAtPath:self.cacheDirectory];
     }
     return self;
@@ -69,6 +69,7 @@
     data.isDownloading = YES;
     
     data.cachePath = [self.cacheDirectory stringByAppendingPathComponent:url.lastPathComponent];
+    
     BOOL isExist = [NSFileManager.defaultManager fileExistsAtPath:data.cachePath];
     if (isExist) {
         [NSFileManager.defaultManager removeItemAtPath:data.cachePath error:nil];

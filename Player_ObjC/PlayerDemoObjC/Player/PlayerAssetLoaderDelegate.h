@@ -10,7 +10,7 @@
 
 @interface PlayerAssetLoaderDelegate : NSObject <AVAssetResourceLoaderDelegate>
 
-- (instancetype)init;
+- (instancetype)init NS_UNAVAILABLE;
 - (instancetype)initWithCacheDirectory:(NSString *)cacheDirectory destDirectory:(NSString *)destDirectory;
 
 @end

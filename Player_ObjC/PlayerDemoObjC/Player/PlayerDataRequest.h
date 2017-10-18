@@ -25,9 +25,12 @@
 @property (nonatomic, readonly) NSInteger contentLength;
 @property (nonatomic, readonly) NSString * _Nullable contentType;
 
-@property (nonatomic, strong) NSString * _Nullable cacheDirectory;
+@property (nonatomic, readonly) NSString * _Nullable cacheDirectory;
 
 @property (nonatomic, weak) id<PlayerDataRequestDelegate> _Nullable delegate;
+
+- (instancetype _Nonnull )init NS_UNAVAILABLE;
+- (instancetype _Nonnull )initWithCacheDirectory:(NSString *_Nonnull)cacheDirectory;
 
 - (void)resume:(NSString *_Nullable)urlString withOffset:(NSInteger)offset;
 - (void)cancel:(NSString *_Nonnull)urlString;
