@@ -23,7 +23,6 @@ static void *kPlayerStatusObservationContext = &kPlayerStatusObservationContext;
 static void *kPlayerRateObservationContext = &kPlayerRateObservationContext;
 static void *kPlayerCurrentItemObservationContext = &kPlayerCurrentItemObservationContext;
 
-
 @interface Player () {
     PlayerAssetLoaderDelegate *assetLoaderDelegate;
 }
@@ -35,6 +34,12 @@ static void *kPlayerCurrentItemObservationContext = &kPlayerCurrentItemObservati
 
 @property (nonatomic, strong) NSString *destDirectory;
 @property (nonatomic, strong) NSString *cacheDirectory;
+
+@end
+
+@interface Player (FrameOutput)
+
+- (void)frame;
 
 @end
 
@@ -81,9 +86,10 @@ static void *kPlayerCurrentItemObservationContext = &kPlayerCurrentItemObservati
             url = [NSURL fileURLWithPath:videoPath isDirectory:NO];
             asset = [AVURLAsset URLAssetWithURL:url options:nil];
         } else {
-            url = [self getSchemeVideoURL:url];
-            asset = [AVURLAsset URLAssetWithURL:url options:nil];
-            [self configDelegates:asset];
+            NSString *scheme = url.scheme;
+            NSURL *schemeURL = [self getSchemeVideoURL:url];
+            asset = [AVURLAsset URLAssetWithURL:schemeURL options:nil];
+            [self configDelegates:asset originScheme:scheme];
         }
         
         /*
@@ -92,13 +98,14 @@ static void *kPlayerCurrentItemObservationContext = &kPlayerCurrentItemObservati
          */
         NSArray *requestedKeys = [NSArray arrayWithObjects:kPlayableKey, nil];
         
+        __weak typeof(self) weakSelf = self;
         /* Tells the asset to load the values of any of the specified keys that are not already loaded. */
         [asset loadValuesAsynchronouslyForKeys:requestedKeys completionHandler: ^{
-             dispatch_async( dispatch_get_main_queue(), ^{
-                                /* IMPORTANT: Must dispatch to main queue in order to operate on the AVPlayer and AVPlayerItem. */
-                                [self prepareToPlayAsset:asset withKeys:requestedKeys];
-                            });
-         }];
+            dispatch_async( dispatch_get_main_queue(), ^{
+                /* IMPORTANT: Must dispatch to main queue in order to operate on the AVPlayer and AVPlayerItem. */
+                [weakSelf prepareToPlayAsset:asset withKeys:requestedKeys];
+            });
+        }];
     }
 }
 
@@ -120,8 +127,8 @@ static void *kPlayerCurrentItemObservationContext = &kPlayerCurrentItemObservati
     self.player.volume = volume;
 }
 
-- (void)configDelegates:(AVURLAsset *)asset {
-    self->assetLoaderDelegate = [[PlayerAssetLoaderDelegate alloc] initWithCacheDirectory:self.cacheDirectory destDirectory:self.destDirectory];
+- (void)configDelegates:(AVURLAsset *)asset originScheme:(NSString *)scheme {
+    self->assetLoaderDelegate = [[PlayerAssetLoaderDelegate alloc] initWithOriginScheme:scheme cacheDirectory:self.cacheDirectory destDirectory:self.destDirectory];
     AVAssetResourceLoader *loader = asset.resourceLoader;
     [loader setDelegate:assetLoaderDelegate queue:dispatch_queue_create("com.hiscene.jt.playerAssetLoader", nil)];
 }
@@ -199,7 +206,9 @@ static void *kPlayerCurrentItemObservationContext = &kPlayerCurrentItemObservati
         
         __weak typeof(self) weakSelf = self;
         self.itemObserver = [self.player addPeriodicTimeObserverForInterval:CMTimeMake(1, 30) queue:dispatch_get_main_queue() usingBlock:^(CMTime time) {
-            [weakSelf frame];
+            if (weakSelf.isPlaying) {
+                [weakSelf frame];
+            }
         }];
     }
 }
@@ -222,16 +231,16 @@ static void *kPlayerCurrentItemObservationContext = &kPlayerCurrentItemObservati
         AVPlayerItemStatus status = playerItem.status;
         switch (status) {
             case AVPlayerItemStatusUnknown:{
-                NSLog(@"AVPlayerItemStatusUnknown");
+                NSLog(@"Player: StatusUnknown");
             }
                 break;
             case AVPlayerItemStatusReadyToPlay:{
-                NSLog(@"AVPlayerItemStatusReadyToPlay");
+                NSLog(@"Player: StatusReadyToPlay");
                 [self resume];
             }
                 break;
             case AVPlayerItemStatusFailed:{
-                NSLog(@"AVPlayerItemStatusFailed");
+                NSLog(@"Player: StatusFailed");
                 [self pause];
                 [self assetFailedToPrepareForPlayback:playerItem.error];
             }
@@ -273,7 +282,6 @@ static void *kPlayerCurrentItemObservationContext = &kPlayerCurrentItemObservati
 @implementation Player (FrameOutput)
 
 - (void)frame {
-    NSLog(@"Player frame");
     const CMTime currentTime = self.item.currentTime;
     if ([self.itemOutput hasNewPixelBufferForItemTime:currentTime]) {
         const CVPixelBufferRef pixelBuffer = [self.itemOutput copyPixelBufferForItemTime:currentTime itemTimeForDisplay:nil];

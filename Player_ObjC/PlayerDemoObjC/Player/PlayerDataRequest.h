@@ -20,7 +20,7 @@
 
 @interface PlayerDataRequest : NSObject
 
-@property (nonatomic, readonly) NSInteger startOffset;
+@property (nonatomic, readonly) NSInteger requestOffset;
 @property (nonatomic, readonly) NSInteger downloadedLength;
 @property (nonatomic, readonly) NSInteger contentLength;
 @property (nonatomic, readonly) NSString * _Nullable contentType;
@@ -29,17 +29,11 @@
 
 @property (nonatomic, weak) id<PlayerDataRequestDelegate> _Nullable delegate;
 
-- (instancetype _Nonnull )init NS_UNAVAILABLE;
+- (instancetype _Nonnull)init NS_UNAVAILABLE;
 - (instancetype _Nonnull )initWithCacheDirectory:(NSString *_Nonnull)cacheDirectory;
 
-- (void)resume:(NSString *_Nullable)urlString withOffset:(NSInteger)offset;
+- (void)resume:(NSString *_Nullable)urlString requestOffset:(NSInteger)offset;
 - (void)cancel:(NSString *_Nonnull)urlString;
-
-@end
-
-@interface PlayerDataRequest (FileManager)
-
-- (void)createDirectoryAtPath:(NSString *_Nullable)path;
-- (BOOL)deleteFileAtPath:(NSString *_Nullable)path;
+- (void)invalidate;
 
 @end

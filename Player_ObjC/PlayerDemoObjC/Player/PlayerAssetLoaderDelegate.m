@@ -19,25 +19,25 @@
 @property (nonatomic, strong) PlayerDataRequest *dataRequest;
 @property (nonatomic, strong) NSMutableArray *pendingRequests;
 
+@property (nonatomic, strong) NSString *originScheme;
+
 @end
 
 @implementation PlayerAssetLoaderDelegate
 
-- (instancetype)init {
-    NSString *document = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES).lastObject;
-    return [self initWithCacheDirectory:document destDirectory:document];
-}
-
-- (instancetype)initWithCacheDirectory:(NSString *)cacheDirectory destDirectory:(NSString *)destDirectory {
+- (instancetype)initWithOriginScheme:(NSString *)scheme cacheDirectory:(NSString *)cacheDirectory destDirectory:(NSString *)destDirectory {
     self = [super init];
     if (self) {
         self.pendingRequests = [NSMutableArray array];
-        self.dataRequest = [[PlayerDataRequest alloc] initWithCacheDirectory:cacheDirectory];
-        self.dataRequest.delegate = self;
         self.cacheDirectory = cacheDirectory;
         self.destDirectory = destDirectory;
+        self.originScheme = scheme;
     }
     return self;
+}
+
+- (void)dealloc {
+    [self.dataRequest invalidate];
 }
 
 #pragma mark - AVAssetResourceLoaderDelegate
@@ -67,6 +67,7 @@ didCancelLoadingRequest:(AVAssetResourceLoadingRequest *)loadingRequest {
 - (void)playerDataRequest:(PlayerDataRequest *)dataRequest
                playerData:(PlayerData *)data
      didCompleteWithError:(NSError *)error {
+
     if (error) {
         NSLog(@"didCompleteWithError: %@", error.description);
     } else {
@@ -91,22 +92,35 @@ didCancelLoadingRequest:(AVAssetResourceLoadingRequest *)loadingRequest {
 #pragma mark - Private
 
 - (void)loadingRequest:(AVAssetResourceLoadingRequest *)loadingRequest {
-    AVAssetResourceLoadingDataRequest *dataRequest = loadingRequest.dataRequest;
-    NSUInteger startOffset = (NSUInteger)dataRequest.requestedOffset;
-    if (dataRequest.currentOffset != 0) {
-        startOffset = (NSUInteger)dataRequest.currentOffset;
+    @synchronized(self) {
+        if (self.dataRequest) {
+            if (loadingRequest.dataRequest.requestedOffset >= self.dataRequest.requestOffset &&
+                loadingRequest.dataRequest.requestedOffset <= self.dataRequest.requestOffset + self.dataRequest.downloadedLength) {
+                NSLog(@"数据已经缓存，则直接完成");
+                [self internalPendingRequestsWithCachePath:[self.cacheDirectory stringByAppendingPathComponent:loadingRequest.request.URL.lastPathComponent]];
+            }
+        } else {
+            self.dataRequest = [[PlayerDataRequest alloc] initWithCacheDirectory:self.cacheDirectory];
+            self.dataRequest.delegate = self;
+            
+            AVAssetResourceLoadingDataRequest *dataRequest = loadingRequest.dataRequest;
+            NSUInteger startOffset = (NSUInteger)dataRequest.requestedOffset;
+            if (dataRequest.currentOffset != 0) {
+                startOffset = (NSUInteger)dataRequest.currentOffset;
+            }
+            startOffset = MAX(0, startOffset);
+            
+            NSURLComponents *actualURLComponents = [[NSURLComponents alloc] initWithURL:loadingRequest.request.URL resolvingAgainstBaseURL:NO];
+            actualURLComponents.scheme = self.originScheme;
+            NSURL *url = actualURLComponents.URL;
+            [self.dataRequest resume:url.absoluteString requestOffset:startOffset];
+        }
     }
-    startOffset = MAX(0, startOffset);
-    
-    NSURLComponents *actualURLComponents = [[NSURLComponents alloc] initWithURL:loadingRequest.request.URL resolvingAgainstBaseURL:NO];
-    actualURLComponents.scheme = @"http";
-    NSURL *url = actualURLComponents.URL;
-    [self.dataRequest resume:url.absoluteString withOffset:0];
 }
 
 - (void)cancelRequest:(AVAssetResourceLoadingRequest *)loadingRequest {
     NSURLComponents *actualURLComponents = [[NSURLComponents alloc] initWithURL:loadingRequest.request.URL resolvingAgainstBaseURL:NO];
-    actualURLComponents.scheme = @"http";
+    actualURLComponents.scheme = self.originScheme;
     NSURL *url = actualURLComponents.URL;
     [self.dataRequest cancel:url.absoluteString];
 }
@@ -115,14 +129,14 @@ didCancelLoadingRequest:(AVAssetResourceLoadingRequest *)loadingRequest {
     NSMutableArray *requestsCompleted = [NSMutableArray array];
     for (AVAssetResourceLoadingRequest *loadingRequest in self.pendingRequests) {
         @autoreleasepool {
-            if (! loadingRequest.isFinished) {
+            if (!loadingRequest.isFinished && !loadingRequest.isCancelled) {
                 [self fillInContentInformation:loadingRequest.contentInformationRequest];
                 BOOL didRespondFinished = [self respondWithDataForRequest:loadingRequest cachePath:cachePath];
                 if (didRespondFinished) {
                     [requestsCompleted addObject:loadingRequest];
                 }
             }
-        }
+        }        
     }
     if (requestsCompleted.count > 0) {
         NSLog(@"state: Finished");
@@ -141,9 +155,9 @@ didCancelLoadingRequest:(AVAssetResourceLoadingRequest *)loadingRequest {
 
 - (BOOL)respondWithDataForRequest:(AVAssetResourceLoadingRequest *)loadingRequest cachePath:(NSString *)cachePath {
     NSUInteger cacheLength = self.dataRequest.downloadedLength;
-    NSUInteger requestedOffset = loadingRequest.dataRequest.requestedOffset;
+    NSUInteger requestedOffset = (NSUInteger)loadingRequest.dataRequest.requestedOffset;
     if (loadingRequest.dataRequest.currentOffset != 0) {
-        requestedOffset = loadingRequest.dataRequest.currentOffset;
+        requestedOffset = (NSUInteger)loadingRequest.dataRequest.currentOffset;
     }
     NSUInteger canReadLength = cacheLength - (requestedOffset - 0);
     NSUInteger respondLength = MIN(canReadLength, loadingRequest.dataRequest.requestedLength);
@@ -154,7 +168,7 @@ didCancelLoadingRequest:(AVAssetResourceLoadingRequest *)loadingRequest {
     [loadingRequest.dataRequest respondWithData:tempVideoData];
     
     NSUInteger nowendOffset = requestedOffset + canReadLength;
-    NSUInteger reqEndOffset = loadingRequest.dataRequest.requestedOffset + loadingRequest.dataRequest.requestedLength;
+    NSUInteger reqEndOffset = (NSUInteger)loadingRequest.dataRequest.requestedOffset + (NSUInteger)loadingRequest.dataRequest.requestedLength;
     if (nowendOffset >= reqEndOffset) {
         [loadingRequest finishLoading];
         NSLog(@"finishLoading");

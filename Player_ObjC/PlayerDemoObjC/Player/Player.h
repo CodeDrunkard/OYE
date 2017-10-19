@@ -29,9 +29,3 @@
 - (void)pause;
 
 @end
-
-@interface Player (FrameOutput)
-
-- (void)frame;
-
-@end

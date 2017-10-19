@@ -15,8 +15,6 @@
 @property (nonatomic, strong) NSString *cachePath;
 @property (nonatomic, assign) BOOL isDownloading;
 
-@property (nonatomic, assign) NSUInteger downloadedSize;
-
 @property (nonatomic, assign) double progress;
 @property (nonatomic, assign) double totalSize;
 @property (nonatomic, assign) double speed;
