@@ -1,5 +1,5 @@
 //
-//  PlayerData.h
+//  PlayerModel.h
 //  HiARSDKComponent
 //
 //  Created by JT Ma on 12/10/2017.
@@ -8,11 +8,12 @@
 
 #import <Foundation/Foundation.h>
 
-@interface PlayerData : NSObject
+@interface PlayerModel : NSObject
 
 @property (nonatomic, strong) NSString *url;
 @property (nonatomic, strong) NSURLSessionDataTask *task;
 @property (nonatomic, strong) NSString *cachePath;
+@property (nonatomic, strong) NSURL *location;
 @property (nonatomic, assign) BOOL isDownloading;
 
 @property (nonatomic, assign) double progress;

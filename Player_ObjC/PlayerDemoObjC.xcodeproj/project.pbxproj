@@ -9,7 +9,6 @@
 /* Begin PBXBuildFile section */
 		6B5461E41F95B20500267656 /* Player.m in Sources */ = {isa = PBXBuildFile; fileRef = 6B5461DB1F95B1DE00267656 /* Player.m */; };
 		6B5461E51F95B20700267656 /* PlayerAssetLoaderDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 6B5461DD1F95B1DE00267656 /* PlayerAssetLoaderDelegate.m */; };
-		6B5461E61F95B20900267656 /* PlayerData.m in Sources */ = {isa = PBXBuildFile; fileRef = 6B5461DF1F95B1DE00267656 /* PlayerData.m */; };
 		6B5461E71F95B20B00267656 /* PlayerDataRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = 6B5461E11F95B1DE00267656 /* PlayerDataRequest.m */; };
 		6B5461E81F95B20C00267656 /* PlayerPreview.m in Sources */ = {isa = PBXBuildFile; fileRef = 6B5461E31F95B1DE00267656 /* PlayerPreview.m */; };
 		6B59FAC21F8F1680003639DF /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 6B59FAC11F8F1680003639DF /* AppDelegate.m */; };
@@ -18,6 +17,7 @@
 		6B59FACA1F8F1680003639DF /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 6B59FAC91F8F1680003639DF /* Assets.xcassets */; };
 		6B59FACD1F8F1680003639DF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 6B59FACB1F8F1680003639DF /* LaunchScreen.storyboard */; };
 		6B59FAD01F8F1680003639DF /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 6B59FACF1F8F1680003639DF /* main.m */; };
+		6B78F58E1F99D487000375E1 /* PlayerModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 6B78F58D1F99D487000375E1 /* PlayerModel.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -25,8 +25,6 @@
 		6B5461DB1F95B1DE00267656 /* Player.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = Player.m; sourceTree = "<group>"; };
 		6B5461DC1F95B1DE00267656 /* PlayerAssetLoaderDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PlayerAssetLoaderDelegate.h; sourceTree = "<group>"; };
 		6B5461DD1F95B1DE00267656 /* PlayerAssetLoaderDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = PlayerAssetLoaderDelegate.m; sourceTree = "<group>"; };
-		6B5461DE1F95B1DE00267656 /* PlayerData.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PlayerData.h; sourceTree = "<group>"; };
-		6B5461DF1F95B1DE00267656 /* PlayerData.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = PlayerData.m; sourceTree = "<group>"; };
 		6B5461E01F95B1DE00267656 /* PlayerDataRequest.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PlayerDataRequest.h; sourceTree = "<group>"; };
 		6B5461E11F95B1DE00267656 /* PlayerDataRequest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = PlayerDataRequest.m; sourceTree = "<group>"; };
 		6B5461E21F95B1DE00267656 /* PlayerPreview.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PlayerPreview.h; sourceTree = "<group>"; };
@@ -41,6 +39,8 @@
 		6B59FACC1F8F1680003639DF /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		6B59FACE1F8F1680003639DF /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		6B59FACF1F8F1680003639DF /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		6B78F58C1F99D487000375E1 /* PlayerModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PlayerModel.h; sourceTree = "<group>"; };
+		6B78F58D1F99D487000375E1 /* PlayerModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = PlayerModel.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -61,12 +61,12 @@
 				6B5461DB1F95B1DE00267656 /* Player.m */,
 				6B5461DC1F95B1DE00267656 /* PlayerAssetLoaderDelegate.h */,
 				6B5461DD1F95B1DE00267656 /* PlayerAssetLoaderDelegate.m */,
-				6B5461DE1F95B1DE00267656 /* PlayerData.h */,
-				6B5461DF1F95B1DE00267656 /* PlayerData.m */,
 				6B5461E01F95B1DE00267656 /* PlayerDataRequest.h */,
 				6B5461E11F95B1DE00267656 /* PlayerDataRequest.m */,
 				6B5461E21F95B1DE00267656 /* PlayerPreview.h */,
 				6B5461E31F95B1DE00267656 /* PlayerPreview.m */,
+				6B78F58C1F99D487000375E1 /* PlayerModel.h */,
+				6B78F58D1F99D487000375E1 /* PlayerModel.m */,
 			);
 			path = Player;
 			sourceTree = "<group>";
@@ -180,8 +180,8 @@
 				6B5461E51F95B20700267656 /* PlayerAssetLoaderDelegate.m in Sources */,
 				6B5461E71F95B20B00267656 /* PlayerDataRequest.m in Sources */,
 				6B5461E81F95B20C00267656 /* PlayerPreview.m in Sources */,
-				6B5461E61F95B20900267656 /* PlayerData.m in Sources */,
 				6B59FAD01F8F1680003639DF /* main.m in Sources */,
+				6B78F58E1F99D487000375E1 /* PlayerModel.m in Sources */,
 				6B59FAC21F8F1680003639DF /* AppDelegate.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

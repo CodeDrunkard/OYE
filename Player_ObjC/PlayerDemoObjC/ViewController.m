@@ -27,7 +27,7 @@
     self.player = [[Player alloc] init];
     self.preview.player = self.player.player;
     
-    NSURL *url = [NSURL URLWithString:@"http://video.hiscene.com/20130529_1369795513.mp4"];
+    NSURL *url = [NSURL URLWithString:@"https://res.hiar.io/group1/M00/5D/11/CgBkg1nKI6qAV2EQAMp6Wt296yI263.mp4"];
     if (url) {
         [self.player playWithURL:url];
         self.player.loop = YES;
@@ -35,7 +35,7 @@
 }
 
 - (IBAction)play:(UIButton *)sender {
-    NSURL *url = [NSURL URLWithString:@"http://video.hiscene.com/20130529_1369795513.mp4"];
+    NSURL *url = [NSURL URLWithString:@"https://res.hiar.io/group1/M00/5D/11/CgBkg1nKI6qAV2EQAMp6Wt296yI263.mp4"];
     if (url) {
         [self.player playWithURL:url];
         self.player.loop = YES;

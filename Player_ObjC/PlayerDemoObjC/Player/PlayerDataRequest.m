@@ -11,7 +11,7 @@
 @interface PlayerDataRequest () <NSURLSessionDelegate, NSURLSessionDataDelegate>
 
 @property (nonatomic, strong) NSURLSession *session;
-@property (nonatomic, strong) NSMutableDictionary<NSString *, PlayerData *> *activeDownloads;
+@property (nonatomic, strong) PlayerModel *playerModel;
 
 @property (nonatomic, assign) NSInteger requestOffset;
 @property (nonatomic, assign) NSInteger downloadedLength;
@@ -20,6 +20,8 @@
 
 @property (nonatomic, strong) NSFileHandle *fileHandle;
 @property (nonatomic, strong) NSString *cacheDirectory;
+
+@property (nonatomic, assign) BOOL isInvalid;
 
 @end
 
@@ -37,16 +39,20 @@
     if (self) {
         NSURLSessionConfiguration *configuration = [NSURLSessionConfiguration defaultSessionConfiguration];
         self.session = [NSURLSession sessionWithConfiguration:configuration delegate:self delegateQueue:[NSOperationQueue mainQueue]];
-        self.activeDownloads = [NSMutableDictionary dictionary];
         self.cacheDirectory = cacheDirectory;
         [self createDirectoryAtPath:self.cacheDirectory];
     }
     return self;
 }
 
+- (void)dealloc {
+    NSLog(@"Player: data request dealloc");
+}
+
 - (void)invalidate {
+    self.isInvalid = YES;
     [self.session invalidateAndCancel];
-    [self deleteFileAtPath:self.cacheDirectory];
+//    [self deleteFileAtPath:self.cacheDirectory];
 }
 
 - (void)resume:(NSString *)urlString requestOffset:(NSInteger)offset {
@@ -55,42 +61,41 @@
     NSURL *url = [NSURL URLWithString:urlString];
     if (!url) return;
     
-    PlayerData *data = self.activeDownloads[urlString];
-    if (! data) {
-        data = [[PlayerData alloc] initWithURL:urlString];
-        self.activeDownloads[urlString] = data;
+    if (! self.playerModel) {
+        self.playerModel = [[PlayerModel alloc] initWithURL:urlString];
     }
 
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
     
-    if (data.isDownloading) return;
+    if (self.playerModel.isDownloading) return;
     
     if (offset >= 0) {
         NSString *range = [NSString stringWithFormat:@"bytes:%zd-", offset];
         [request setValue:range forHTTPHeaderField:@"Range"];
     }
     
-    data.task = [self.session dataTaskWithRequest:request];
+    self.playerModel.task = [self.session dataTaskWithRequest:request];
     
-    [data.task resume];
-    data.isDownloading = YES;
+    [self.playerModel.task resume];
+    self.playerModel.isDownloading = YES;
     
-    data.cachePath = [self.cacheDirectory stringByAppendingPathComponent:url.lastPathComponent];
+    NSString *cachePath = [self.cacheDirectory stringByAppendingPathComponent:url.lastPathComponent];
+    self.playerModel.cachePath = cachePath;
+    self.playerModel.location = [NSURL fileURLWithPath:cachePath isDirectory:NO];
     
-    BOOL isExist = [NSFileManager.defaultManager fileExistsAtPath:data.cachePath];
+    BOOL isExist = [NSFileManager.defaultManager fileExistsAtPath:self.playerModel.cachePath];
     if (isExist) {
-        [NSFileManager.defaultManager removeItemAtPath:data.cachePath error:nil];
+        [NSFileManager.defaultManager removeItemAtPath:self.playerModel.cachePath error:nil];
     }
-    [NSFileManager.defaultManager createFileAtPath:data.cachePath contents:nil attributes:nil];
-    self.fileHandle = [NSFileHandle fileHandleForWritingAtPath:data.cachePath];
+    [NSFileManager.defaultManager createFileAtPath:self.playerModel.cachePath contents:nil attributes:nil];
+    self.fileHandle = [NSFileHandle fileHandleForWritingAtPath:self.playerModel.cachePath];
 }
 
 - (void)cancel:(NSString *)urlString {
-    PlayerData *data = self.activeDownloads[urlString];
-    if (data && data.isDownloading) {
-        data.isDownloading = NO;
-        [data.task cancel];
-        self.activeDownloads[urlString] = nil;
+    if (self.playerModel && self.playerModel.isDownloading) {
+        self.playerModel.isDownloading = NO;
+        [self.playerModel.task cancel];
+        self.self.playerModel = nil;
     }
 }
 
@@ -108,6 +113,10 @@ didReceiveResponse:(NSURLResponse *)response
      */
     completionHandler(NSURLSessionResponseAllow);
     
+    if (self.isInvalid) {
+        return;
+    }
+    
     NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse*)response;
     NSDictionary *allHeaderFields = (NSDictionary *)[httpResponse allHeaderFields];
     NSInteger length = [[allHeaderFields valueForKey:@"Content-Length"] integerValue];
@@ -120,46 +129,52 @@ didReceiveResponse:(NSURLResponse *)response
 - (void)URLSession:(NSURLSession *)session
           dataTask:(NSURLSessionDataTask *)dataTask
     didReceiveData:(NSData *)data {
+    if (self.isInvalid) {
+        return;
+    }
     [self.fileHandle seekToEndOfFile];
     [self.fileHandle writeData:data];
     self.downloadedLength += data.length;
     
-    NSString* urlString = dataTask.originalRequest.URL.absoluteString;
-    PlayerData *model = self.activeDownloads[urlString];
-    
-    if (self.delegate && [self.delegate respondsToSelector:@selector(playerDataRequest:playerData:didReceiveData:)]) {
-        [self.delegate playerDataRequest:self playerData:model didReceiveData:data];
+    if (self.delegate && [self.delegate respondsToSelector:@selector(playerDataRequest:didReceiveData:receiveDataToURL:)]) {
+        [self.delegate playerDataRequest:self didReceiveData:data receiveDataToURL:self.playerModel.location];
     }
 }
 
 - (void)URLSession:(NSURLSession *)session
               task:(NSURLSessionTask *)task
 didCompleteWithError:(nullable NSError *)error {
-    NSString* urlString = task.originalRequest.URL.absoluteString;
-    PlayerData *data = self.activeDownloads[urlString];
-    if (self.delegate && [self.delegate respondsToSelector:@selector(playerDataRequest:playerData:didCompleteWithError:)]) {
-        [self.delegate playerDataRequest:self playerData:data didCompleteWithError:error];
+    if (self.isInvalid) {
+        return;
+    }
+    if (error) {
+        if (self.delegate && [self.delegate respondsToSelector:@selector(playerDataRequest:didCompleteWithError:)]) {
+            [self.delegate playerDataRequest:self didCompleteWithError:error];
+        }
+    } else {
+        if (self.delegate && [self.delegate respondsToSelector:@selector(playerDataRequest:didFinishDownloadingToURL:)]) {
+            [self.delegate playerDataRequest:self didFinishDownloadingToURL:self.playerModel.location];
+        }
     }
     
-    if (data) {
-        data.isDownloading = NO;
-        self.activeDownloads[urlString] = nil;
+    if (self.playerModel) {
+        self.playerModel.isDownloading = NO;
+        self.self.playerModel = nil;
     }
 }
 
-/**
- -1001: 请求超时
- -1002: URL错误
- -1003: 找不到服务器
- -1004: 服务器内部错误
- -1005: 网络中断
- -1009: 无网络连接
- */
 - (void)URLSession:(NSURLSession *)session
 didBecomeInvalidWithError:(NSError *)error {
-    NSLog(@"PlayerDataRequest is invalid with error: %@", error.description);
+    if (self.isInvalid) {
+        return;
+    }
     if (error.code == kCFURLErrorTimedOut) {
         
+    } else {
+        
+    }
+    if (self.delegate && [self.delegate respondsToSelector:@selector(playerDataRequest:didCompleteWithError:)]) {
+        [self.delegate playerDataRequest:self didCompleteWithError:error];
     }
 }
 
@@ -191,3 +206,38 @@ didBecomeInvalidWithError:(NSError *)error {
 }
 
 @end
+
+/**
+ kCFURLErrorBackgroundSessionInUseByAnotherProcess = -996,
+ kCFURLErrorBackgroundSessionWasDisconnected = -997,
+ kCFURLErrorUnknown = -998,
+ kCFURLErrorCancelled = -999,
+ kCFURLErrorBadURL = -1000,
+ kCFURLErrorTimedOut = -1001,
+ kCFURLErrorUnsupportedURL = -1002,
+ kCFURLErrorCannotFindHost = -1003,
+ kCFURLErrorCannotConnectToHost = -1004,
+ kCFURLErrorNetworkConnectionLost = -1005,
+ kCFURLErrorDNSLookupFailed = -1006,
+ kCFURLErrorHTTPTooManyRedirects = -1007,
+ kCFURLErrorResourceUnavailable = -1008,
+ kCFURLErrorNotConnectedToInternet = -1009,
+ kCFURLErrorRedirectToNonExistentLocation = -1010,
+ kCFURLErrorBadServerResponse = -1011,
+ kCFURLErrorUserCancelledAuthentication = -1012,
+ kCFURLErrorUserAuthenticationRequired = -1013,
+ kCFURLErrorZeroByteResource = -1014,
+ kCFURLErrorCannotDecodeRawData = -1015,
+ kCFURLErrorCannotDecodeContentData = -1016,
+ kCFURLErrorCannotParseResponse = -1017,
+ kCFURLErrorInternationalRoamingOff = -1018,
+ kCFURLErrorCallIsActive = -1019,
+ kCFURLErrorDataNotAllowed = -1020,
+ kCFURLErrorRequestBodyStreamExhausted = -1021,
+ kCFURLErrorAppTransportSecurityRequiresSecureConnection = -1022,
+ kCFURLErrorFileDoesNotExist = -1100,
+ kCFURLErrorFileIsDirectory = -1101,
+ kCFURLErrorNoPermissionsToReadFile = -1102,
+ kCFURLErrorDataLengthExceedsMaximum = -1103,
+ kCFURLErrorFileOutsideSafeArea = -1104,
+ */

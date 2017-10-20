@@ -20,6 +20,7 @@
 @property (nonatomic, strong) NSMutableArray *pendingRequests;
 
 @property (nonatomic, strong) NSString *originScheme;
+@property (nonatomic, strong) NSLock* lock;
 
 @end
 
@@ -32,12 +33,14 @@
         self.cacheDirectory = cacheDirectory;
         self.destDirectory = destDirectory;
         self.originScheme = scheme;
+        self.lock = [[NSLock alloc] init];
     }
     return self;
 }
 
 - (void)dealloc {
     [self.dataRequest invalidate];
+    NSLog(@"Player: asset loader dealloc");
 }
 
 #pragma mark - AVAssetResourceLoaderDelegate
@@ -45,76 +48,79 @@
 - (BOOL)resourceLoader:(AVAssetResourceLoader *)resourceLoader
 shouldWaitForLoadingOfRequestedResource:(AVAssetResourceLoadingRequest *)loadingRequest {
     NSLog(@"state: Loading");
+    [self.lock lock];
     [self.pendingRequests addObject:loadingRequest];
     [self loadingRequest:loadingRequest];
+    [self.lock unlock];
     return YES;
 }
 
 - (void)resourceLoader:(AVAssetResourceLoader *)resourceLoader
 didCancelLoadingRequest:(AVAssetResourceLoadingRequest *)loadingRequest {
     NSLog(@"state: Cancel");
+    [self.lock lock];
     [self.pendingRequests removeObject:loadingRequest];
+    [self.lock unlock];
 }
 
 #pragma mark - PlayerDataRequestDelegate
 
 - (void)playerDataRequest:(PlayerDataRequest *)dataRequest
-               playerData:(PlayerData *)model
-           didReceiveData:(NSData *)data {
-    [self internalPendingRequestsWithCachePath:model.cachePath];
+           didReceiveData:(NSData *)data
+         receiveDataToURL:(NSURL *)location {
+    [self.lock lock];
+    [self internalPendingRequestsWithCachePath:location];
+    [self.lock unlock];
 }
 
 - (void)playerDataRequest:(PlayerDataRequest *)dataRequest
-               playerData:(PlayerData *)data
-     didCompleteWithError:(NSError *)error {
-
-    if (error) {
-        NSLog(@"didCompleteWithError: %@", error.description);
-    } else {
-        NSLog(@"didComplete");
-        if (! [self.cacheDirectory isEqualToString:self.destDirectory]) {
-            NSString *cachePath = [self.cacheDirectory stringByAppendingPathComponent:data.url.lastPathComponent];
-            NSString *destPath = [self.destDirectory stringByAppendingPathComponent:data.url.lastPathComponent];
-            BOOL isExist = [NSFileManager.defaultManager fileExistsAtPath:destPath];
-            if (isExist) {
-                return;
-            }
-            BOOL isSuccess = [NSFileManager.defaultManager copyItemAtPath:cachePath toPath:destPath error:nil];
-            if (isSuccess) {
-                NSLog(@"copy success");
-            } else {
-                NSLog(@"copy fail");
-            }
+didFinishDownloadingToURL:(NSURL *)location {
+    if (! [self.cacheDirectory isEqualToString:self.destDirectory]) {
+        NSString *cachePath = [self.cacheDirectory stringByAppendingPathComponent:location.lastPathComponent];
+        NSString *destPath = [self.destDirectory stringByAppendingPathComponent:location.lastPathComponent];
+        BOOL isExist = [NSFileManager.defaultManager fileExistsAtPath:destPath];
+        if (isExist) {
+            return;
+        }
+        BOOL isSuccess = [NSFileManager.defaultManager copyItemAtPath:cachePath toPath:destPath error:nil];
+        if (isSuccess) {
+            NSLog(@"copy success");
+        } else {
+            NSLog(@"copy fail");
         }
     }
+}
+
+- (void)playerDataRequest:(PlayerDataRequest *)dataRequest
+     didCompleteWithError:(NSError *)error {
+    NSLog(@"didCompleteWithError: %@", error.description);
 }
 
 #pragma mark - Private
 
 - (void)loadingRequest:(AVAssetResourceLoadingRequest *)loadingRequest {
-    @synchronized(self) {
-        if (self.dataRequest) {
-            if (loadingRequest.dataRequest.requestedOffset >= self.dataRequest.requestOffset &&
-                loadingRequest.dataRequest.requestedOffset <= self.dataRequest.requestOffset + self.dataRequest.downloadedLength) {
-                NSLog(@"数据已经缓存，则直接完成");
-                [self internalPendingRequestsWithCachePath:[self.cacheDirectory stringByAppendingPathComponent:loadingRequest.request.URL.lastPathComponent]];
-            }
-        } else {
-            self.dataRequest = [[PlayerDataRequest alloc] initWithCacheDirectory:self.cacheDirectory];
-            self.dataRequest.delegate = self;
-            
-            AVAssetResourceLoadingDataRequest *dataRequest = loadingRequest.dataRequest;
-            NSUInteger startOffset = (NSUInteger)dataRequest.requestedOffset;
-            if (dataRequest.currentOffset != 0) {
-                startOffset = (NSUInteger)dataRequest.currentOffset;
-            }
-            startOffset = MAX(0, startOffset);
-            
-            NSURLComponents *actualURLComponents = [[NSURLComponents alloc] initWithURL:loadingRequest.request.URL resolvingAgainstBaseURL:NO];
-            actualURLComponents.scheme = self.originScheme;
-            NSURL *url = actualURLComponents.URL;
-            [self.dataRequest resume:url.absoluteString requestOffset:startOffset];
+    if (self.dataRequest) {
+        if (loadingRequest.dataRequest.requestedOffset >= self.dataRequest.requestOffset) {
+            NSLog(@"数据已经缓存，则直接完成");
+            NSString *locationString = [self.cacheDirectory stringByAppendingPathComponent:loadingRequest.request.URL.lastPathComponent];
+            NSURL *location = [NSURL fileURLWithPath:locationString];
+            [self internalPendingRequestsWithCachePath:location];
         }
+    } else {
+        self.dataRequest = [[PlayerDataRequest alloc] initWithCacheDirectory:self.cacheDirectory];
+        self.dataRequest.delegate = self;
+        
+        AVAssetResourceLoadingDataRequest *dataRequest = loadingRequest.dataRequest;
+        NSUInteger startOffset = (NSUInteger)dataRequest.requestedOffset;
+        if (dataRequest.currentOffset != 0) {
+            startOffset = (NSUInteger)dataRequest.currentOffset;
+        }
+        startOffset = MAX(0, startOffset);
+        
+        NSURLComponents *actualURLComponents = [[NSURLComponents alloc] initWithURL:loadingRequest.request.URL resolvingAgainstBaseURL:NO];
+        actualURLComponents.scheme = self.originScheme;
+        NSURL *url = actualURLComponents.URL;
+        [self.dataRequest resume:url.absoluteString requestOffset:startOffset];
     }
 }
 
@@ -125,18 +131,18 @@ didCancelLoadingRequest:(AVAssetResourceLoadingRequest *)loadingRequest {
     [self.dataRequest cancel:url.absoluteString];
 }
 
-- (void)internalPendingRequestsWithCachePath:(NSString *)cachePath {
+- (void)internalPendingRequestsWithCachePath:(NSURL *)location {
     NSMutableArray *requestsCompleted = [NSMutableArray array];
     for (AVAssetResourceLoadingRequest *loadingRequest in self.pendingRequests) {
         @autoreleasepool {
-            if (!loadingRequest.isFinished && !loadingRequest.isCancelled) {
+            if (loadingRequest && !loadingRequest.isFinished && !loadingRequest.isCancelled) {
                 [self fillInContentInformation:loadingRequest.contentInformationRequest];
-                BOOL didRespondFinished = [self respondWithDataForRequest:loadingRequest cachePath:cachePath];
+                BOOL didRespondFinished = [self respondWithDataForRequest:loadingRequest readFromURL:location];
                 if (didRespondFinished) {
                     [requestsCompleted addObject:loadingRequest];
                 }
             }
-        }        
+        }
     }
     if (requestsCompleted.count > 0) {
         NSLog(@"state: Finished");
@@ -153,7 +159,7 @@ didCancelLoadingRequest:(AVAssetResourceLoadingRequest *)loadingRequest {
     contentInformationRequest.contentLength = self.dataRequest.contentLength;
 }
 
-- (BOOL)respondWithDataForRequest:(AVAssetResourceLoadingRequest *)loadingRequest cachePath:(NSString *)cachePath {
+- (BOOL)respondWithDataForRequest:(AVAssetResourceLoadingRequest *)loadingRequest readFromURL:(NSURL *)location {
     NSUInteger cacheLength = self.dataRequest.downloadedLength;
     NSUInteger requestedOffset = (NSUInteger)loadingRequest.dataRequest.requestedOffset;
     if (loadingRequest.dataRequest.currentOffset != 0) {
@@ -162,7 +168,7 @@ didCancelLoadingRequest:(AVAssetResourceLoadingRequest *)loadingRequest {
     NSUInteger canReadLength = cacheLength - (requestedOffset - 0);
     NSUInteger respondLength = MIN(canReadLength, loadingRequest.dataRequest.requestedLength);
     
-    NSFileHandle  *handle = [NSFileHandle fileHandleForReadingAtPath:cachePath];
+    NSFileHandle  *handle = [NSFileHandle fileHandleForReadingFromURL:location error:nil];
     [handle seekToFileOffset:requestedOffset];
     NSData *tempVideoData = [handle readDataOfLength:respondLength];
     [loadingRequest.dataRequest respondWithData:tempVideoData];
@@ -178,5 +184,3 @@ didCancelLoadingRequest:(AVAssetResourceLoadingRequest *)loadingRequest {
 }
 
 @end
-
-

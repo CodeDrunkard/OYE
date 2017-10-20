@@ -7,14 +7,15 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "PlayerData.h"
+#import "PlayerModel.h"
 
 @class PlayerDataRequest;
 
 @protocol PlayerDataRequestDelegate <NSObject>
 
-- (void)playerDataRequest:(PlayerDataRequest *_Nonnull)dataRequest playerData:(PlayerData *_Nullable)model didReceiveData:(NSData *_Nullable)data;
-- (void)playerDataRequest:(PlayerDataRequest *_Nonnull)dataRequest playerData:(PlayerData *_Nullable)data didCompleteWithError:(nullable NSError *)error;
+- (void)playerDataRequest:(PlayerDataRequest *_Nonnull)dataRequest didReceiveData:(NSData *_Nullable)data receiveDataToURL:(NSURL *_Nullable)location;
+- (void)playerDataRequest:(PlayerDataRequest *_Nonnull)dataRequest didFinishDownloadingToURL:(NSURL *_Nullable)location;
+- (void)playerDataRequest:(PlayerDataRequest *_Nonnull)dataRequest didCompleteWithError:(NSError *_Nullable)error;
 
 @end
 
